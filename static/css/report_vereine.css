@@ -1,0 +1,68 @@
+@page {
+    size: A4 portrait;
+    margin-top: 1cm;
+    margin-left: 0cm;
+    margin-right: 0cm;
+    margin-bottom: 1cm;
+    @bottom-center {
+       content: "Seite " counter(page) " von " counter(pages);
+       font-size: 8pt;
+       color: #AAAAAA;
+       border-top: 0pt;
+    }
+}
+
+body {
+    font-family: Helvetica;
+    font-size: 10pt;
+    margin-top: 2cm;
+    margin-left: 1.2cm;
+    margin-right: 1.0cm;
+    margin-bottom: 1.0cm;
+}
+
+table, td, th {
+  border: 0px solid black;
+}
+
+td {
+  vertical-align: top;
+}
+
+.table_header {
+    width: 100%;
+}
+
+.table_content {
+    width: 100%;
+    display: inline-block;
+}
+
+.td1, .th1{
+    width: 5%;
+    vertical-align: top;
+}
+
+.td2, .th2 {
+    width: 65%;
+    vertical-align: top;
+}
+
+.td3, .th3 {
+    width: 20%;
+    vertical-align: top;
+}
+.td4, .th4 {
+    width: 10%;
+    vertical-align: top;
+}
+
+#ueberschrift {
+    position: absolute;
+    left: 13cm;
+    top: 0.0cm;
+    font-family: "Times New Roman";
+    font-size: 18pt;
+    font-weight: bold;
+    color: #777777;
+}

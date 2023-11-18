@@ -1,0 +1,20 @@
+{% extends "base_bezirksturnfest.html" %}
+
+{% block title %}
+    Turnverein - Teilnehmer/in löschen
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+   <p>Edit Verein</p>
+    <form action="" method="post">
+        {% csrf_token %}
+        <p>Bist du sicher die/ Teilnehmerin/Teilnehmerin: "{{ teilnehmer.teilnehmer_vorname}} {{ teilnehmer.teilnehmer_name}} " zu löschen ? </p>
+        {{ form.as_p }}
+        <input type="submit" value="Sicher">
+    </form>
+</div>
+</div>
+{% endblock %}

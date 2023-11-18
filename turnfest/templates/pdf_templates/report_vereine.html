@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+{% load static %}
+    <meta charset="utf-8">
+    <title>Liste der Vereine</title>
+    <meta name="description" content="Liste der Vereine aus dem Turnverein-Programm">
+    <meta name="author" content="Norbert Krings">
+</head>
+<body>
+<div id="ueberschrift">Liste der Vereine</div>
+
+<table class="table_header" >
+    <tr>
+        <th class="th1">Verein</th>
+        <th class="th2">Kürzel</th>
+        <th class="th3">Telefon</th>
+        <th class="th4">E-Mail</th>
+    </tr>
+{% for verein in vereine %}
+    <table class="table_content" >
+        <tr>
+            <td class="td1">{{ verein.verein_name }}</td>
+            <td class="td2">{{ verein.verein_name_kurz }}</td>
+            <td class="td3">{{ verein.verein_telefon }}</td>
+            <td class="td4">{{ verein.verein_email }}</td>
+        </tr>
+    </table>
+<hr>
+{% endfor %}
+</table>
+</body>

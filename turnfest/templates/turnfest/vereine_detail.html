@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Turnverein - Vereine
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p>Detailview der Vereine</p>
+
+    <p>{{ object.verein_name }}</p>
+    <p>{{ object.verein_name_kurz }}</p>
+    <p>{{ object.verein_telefon }}</p>
+    <p>{{ object.verein_email }}</p>
+
+</div>
+{% endblock %}

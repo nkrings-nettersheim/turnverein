@@ -1,0 +1,72 @@
+{% extends "base_bezirksturnfest.html" %}
+
+{% block title %}
+    Turnverein - Teilnehmer
+{% endblock %}
+
+{% block nav %}
+<nav class="navbar navbar-expand-sm navbar-dark bg-secondary">
+<div class="container-fluid">
+    <!-- Links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link 1</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link 2</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Link 3</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+            <div class="col-sm-2">
+                <a href="{% url 'turnfest:teilnehmer_list' %}" class="btn btn-secondary">Teilnehmerliste</a>
+            </div>
+            <div class="col-sm-8"><h3 class="text-center">Teilnehmerliste</h3></div>
+            <div class="col-sm-2">
+                <a href="{% url 'turnfest:teilnehmer_create' %}" class="btn btn-secondary">Neue Teilnehmer/in anlegen</a>
+            </div>
+    </div>
+    <p></p>
+
+    <table class="table table-hover">
+    <thead>
+      <tr>
+          <th class="col-sm-3">Name</th>
+          <th class="col-sm-3">Vorname</th>
+          <th class="col-sm-3">Geburtsjahr</th>
+          <th class="col-sm-3">Verein</th>
+          <th class="col-sm-3">Bearbeiten</th>
+      </tr>
+    </thead>
+          <tbody>
+        {% for teilnehmer in object_list %}
+        <tr>
+            <td>{{ teilnehmer.teilnehmer_name }}</td>
+            <td>{{ teilnehmer.teilnehmer_vorname }}</td>
+            <td>{{ teilnehmer.teilnehmer_geburtsjahr }}</td>
+            <td>{{ teilnehmer.teilnehmer_verein }}</td>
+              <td class="col-sm-1">
+                  <a href="{% url 'turnfest:teilnehmer_edit' teilnehmer.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-pen-to-square" title="ändern"></i></a>
+                  <a href="{% url 'turnfest:teilnehmer_detail' teilnehmer.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-eye" title="anzeigen"></i></a>
+                  <a href="{% url 'turnfest:teilnehmer_delete' teilnehmer.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-trash-can" title="löschen"></i></a>
+              </td>
+
+        </tr>
+
+        {% empty %}
+        <li>No articles yet.</li>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+{% endblock %}

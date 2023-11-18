@@ -1,0 +1,31 @@
+{% extends "base_bezirksturnfest.html" %}
+
+{% load crispy_forms_tags %}
+{% block title %}
+    Turnverein - Teilnehmer
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <p></p>
+    <div class="row">
+            <div class="col-sm-2">
+                <a href="{% url 'turnfest:teilnehmer_list' %}" class="btn btn-secondary">Teilnehmerliste</a>
+            </div>
+            <div class="col-sm-8"><h3 class="text-center">Teilnehmer/in ändern</h3></div>
+            <div class="col-sm-2">
+
+            </div>
+    </div>
+    <p></p>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <input type="submit" value="Update">
+    </form>
+</div>
+
+{% endblock %}

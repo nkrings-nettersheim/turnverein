@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-secondary">
+<div class="container">
+    <!-- Links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'turnfest:index'%}">Startseite</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'turnfest:teilnehmer_upload'%}">Teilnehmer upload</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'turnfest:geraetelisten'%}">Geraetelisten</a>
+      </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Referenzlisten</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'turnfest:vereine_list'%}">Vereine</a></li>
+            <li><a class="dropdown-item" href="{% url 'turnfest:teilnehmer_list'%}">Teilnehmer</a></li>
+          </ul>
+        </li>
+    </ul>
+  </div>
+</nav>

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Turnverein - Wettkampfteilnahme
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p>Liste der Wettkampfteilnehmer</p>
+    <table class="table table-hover">
+    <thead>
+      <tr>
+          <th class="col-sm-3">Vereins-Name</th>
+          <th class="col-sm-3">Vereins-Kürzel</th>
+          <th class="col-sm-3">Telefon</th>
+          <th class="col-sm-3">E-Mail</th>
+      </tr>
+    </thead>
+          <tbody>
+        {% for wettkampfteilnehmer in object_list %}
+        <tr>
+            <td>{{ wettkampfteilnehmer.wktn_teilnehmer }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_bezirksturnfest }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_anwesend }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_sprung }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_mini }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_reck }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_balken }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_barren }}</td>
+            <td>{{ wettkampfteilnehmer.wktn_boden }}</td>
+        </tr>
+
+        {% empty %}
+        <li>No articles yet.</li>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+{% endblock %}
