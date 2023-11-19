@@ -34,8 +34,8 @@ class Medaille(models.Model):
 
 class Meisterschaften(models.Model):
     GENDER = (
-        ('1', 'weiblich'),
-        ('2', 'männlich'),
+        ('w', 'weiblich'),
+        ('m', 'männlich'),
     )
     meisterschaft = models.CharField(max_length=30, blank=True, default='', null=True)
     meisterschaft_gender = models.CharField(max_length=1, choices=GENDER, default='1')
@@ -43,7 +43,7 @@ class Meisterschaften(models.Model):
     meisterschaft_bis = models.DateField(default='1900-01-01')
 
     def __str__(self):
-        return self.meisterschaft + self.meisterschaft_gender
+        return self.meisterschaft + " " + self.meisterschaft_gender
 
 
 class Bezirksturnfest(models.Model):
