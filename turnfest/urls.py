@@ -28,4 +28,10 @@ urlpatterns = [
 
     path('geraetelisten', views.report_geraetelisten, name='geraetelisten'),
 
+    path('ergebnis_erfassen_suche/', views.ergebnis_erfassen_suche, name='ergebnis_erfassen_suche'),
+    path('ergebnis_erfassen/', views.ergebnis_erfassen, name='ergebnis_erfassen'),
+    path('ergebnis_create/', views.ErgebnisCreateView.as_view(), name='ergebnis_create'),
+    path('ergebnis_edit/<int:pk>/', views.ErgebnisUpdateView.as_view(), name='ergebnis_edit'),
+
+    path('auswertung', views.report_auswertung, name='auswertung'),
 ]

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Riegen, Vereine, Geraete, Medaille, Meisterschaften, Bezirksturnfest, Teilnehmer, Wettkampfteilnahme
+from .models import Riegen, Vereine, Geraete, Medaille, Meisterschaften, Bezirksturnfest, Teilnehmer, \
+    BezirksturnfestErgebnisse, Wettkampfteilnahme
 
 
 admin.site.site_header = "Admin Bereich Turnfest Software"
@@ -12,5 +13,5 @@ admin.site.register(Bezirksturnfest)
 admin.site.register(Teilnehmer)
 admin.site.register(Wettkampfteilnahme)
 admin.site.register(Riegen)
-#admin.site.register(Geraete)
+admin.site.register(BezirksturnfestErgebnisse)
 #admin.site.register(Geraete)

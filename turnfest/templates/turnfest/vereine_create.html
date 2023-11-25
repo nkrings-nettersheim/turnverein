@@ -3,16 +3,16 @@
 {% block title %}
     Turnverein - Vereine
 {% endblock %}
-
+{% load crispy_forms_tags %}
 {% block content %}
 
 <div class="container-fluid">
 
-   <p>Create Verein</p>
+   <h3 class="text-center">Neuen Verein anlegen</h3>
     <form action="" method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Save">
+        {{ form|crispy }}
+        <button class="btn btn-secondary" type="submit">Verein anlegen</button>
     </form>
 </div>
 </div>

@@ -1,0 +1,19 @@
+{% extends "base_bezirksturnfest.html" %}
+
+{% block title %}
+    Turnverein
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+   <p>Ergebnis erfassen</p>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Update">
+    </form>
+</div>
+</div>
+{% endblock %}
