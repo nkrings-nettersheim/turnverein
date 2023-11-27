@@ -95,6 +95,13 @@ class Teilnehmer(models.Model):
         "Returns the person's full name."
         return f"{self.teilnehmer_name} {self.teilnehmer_vorname}"
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['teilnehmer_name',
+                                            'teilnehmer_vorname',
+                                            'teilnehmer_geburtsjahr',
+                                            'teilnehmer_verein'], name='unique name_vorname_geburtsjahr_verein'),
+        ]
 
 class Wettkampfteilnahme(models.Model):
     wktn_teilnehmer = models.ForeignKey(Teilnehmer, on_delete=models.PROTECT, null=True)

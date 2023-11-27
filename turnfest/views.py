@@ -37,7 +37,7 @@ from weasyprint import HTML, CSS
 from turnverein.settings import BASE_DIR
 
 from .models import Vereine, Teilnehmer, Wettkampfteilnahme, Geraete, Riegen, BezirksturnfestErgebnisse, Meisterschaften
-from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm
+from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm, TeilnehmerErfassenForm
 
 
 # assert False
@@ -72,9 +72,7 @@ class VereineCreateView(CreateView):
     model = Vereine
     template_name = "turnfest/vereine_create.html"
     form_class = VereinErfassenForm
-    #fields = '__all__'
-    success_url = "/"
-
+    success_url = reverse_lazy("turnfest:vereine_list")
 
 
 class VereineListView(ListView):
@@ -123,13 +121,15 @@ def report_vereine(request):
 class TeilnehmerCreateView(CreateView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_create.html"
-    fields = '__all__'
+    form_class = TeilnehmerErfassenForm
+    #fields = '__all__'
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
 class TeilnehmerList(ListView):
     model = Teilnehmer
 
+    ordering = ['teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_name']
 
 class TeilnehmerDetailView(DetailView):
     model = Teilnehmer
@@ -138,7 +138,8 @@ class TeilnehmerDetailView(DetailView):
 class TeilnehmerUpdateView(UpdateView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_update.html"
-    fields = '__all__'
+    #fields = '__all__'
+    form_class = TeilnehmerErfassenForm
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
@@ -470,7 +471,10 @@ def handle_uploaded_file(file):
                                     teilnehmer_barren=row['Barren'],
                                     teilnehmer_boden=row['Boden'],
                                     )
-        Teilnehmer_neu.save()
+        try:
+            Teilnehmer_neu.save()
+        except:
+            pass
 
 
 ##########################################################################
@@ -525,10 +529,6 @@ class ErgebnisUpdateView(UpdateView):
 ##########################################################################
 # Area Auswertung Bezirksturnfest erfassen
 ##########################################################################
-
-
-
-
 
 def report_auswertung(request):
     meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
