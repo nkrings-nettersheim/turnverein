@@ -1,5 +1,6 @@
 {% extends "base_bezirksturnfest.html" %}
 
+{% load crispy_forms_tags %}
 {% block title %}
     Turnfest
 {% endblock %}
@@ -8,26 +9,33 @@
 {% block content %}
 
 <div class="container-fluid">
+        <p></p>
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4"><h3 class="text-center">Startnummer suchen:</h3></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+    </div>
+    <p></p>
+
     <form action="{% url 'turnfest:ergebnis_erfassen_suche' %}" method="post">
         {% csrf_token %}
-        <p></p>
-        <div class="form-group row">
-               <div class="col-sm-4">
-                   <h5>Startnummer suchen:</h5>
-               </div>
+
+        <div class="row">
+            <div class="col-sm-2"></div>
+           <div class="col-sm-2">
+                <label for="{{ form.startnummer.id_for_label }}" class="control-label">Startnummer:</label>
            </div>
-           <div class="form-group row">
-                <label for="{{ form.startnummer.id_for_label }}" class="col-sm-2 control-label">Startnummer:</label>
-                <div class="col-sm-4">
+            <div class="col-sm-3">
                     {{ form.startnummer }}
                     {{ form.startnummer.errors }}
-                </div>
             </div>
-            <div class="form-group row">
-               <div class="col-sm-12">
-                   <button type="submit" class="btn btn-secondary btn-sm">suchen</button>
-               </div>
-            </div>
+           <div class="col-sm-3"><button type="submit" class="btn btn-secondary btn-sm">suchen</div>
+           <div class="col-sm-2"></div>
+        </div>
+
+
     </form>
 </div>
 

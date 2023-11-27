@@ -7,12 +7,90 @@
 {% block content %}
 
 <div class="container-fluid">
-    <p>Detailview der Teilnehmer</p>
 
-    <p>{{ object.teilnehmer_name }}</p>
-    <p>{{ object.teilnehmer_vorname }}</p>
-    <p>{{ object.teilnehmer_geburtsjahr }}</p>
-    <p>{{ object.teilnehmer_verein }}</p>
+    <p></p>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">
+            <a href="{% url 'turnfest:teilnehmer_list' %}" class="btn btn-secondary">Teilnehmerliste</a>
+        </div>
+        <div class="col-sm-4">   <h3 class="text-center">Detailansicht Teilnehmer/innen</h3></div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2"></div>
+    </div>
+    <p></p>
 
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Name:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_name }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Vorname:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_vorname }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Geburtsjahr:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_geburtsjahr }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Geschlecht:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_gender }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Verein:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_verein }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Anwesend:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_anwesend }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Sprung:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_sprung }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Minitrampolin:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_mini }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Reck/Stufenbarren:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_reck_stufenbarren }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Balken:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_balken }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Barren:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_barren }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Boden:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_boden }}</div>
+        <div class="col-sm-2"></div>
+    </div>
 </div>
 {% endblock %}
