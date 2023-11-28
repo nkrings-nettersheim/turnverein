@@ -36,4 +36,5 @@ urlpatterns = [
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
 
     path('auswertung', views.report_auswertung, name='auswertung'),
+    path('urkunden', views.report_urkunden, name='urkunden'),
 ]

@@ -103,6 +103,7 @@ class Teilnehmer(models.Model):
                                             'teilnehmer_verein'], name='unique name_vorname_geburtsjahr_verein'),
         ]
 
+
 class Wettkampfteilnahme(models.Model):
     wktn_teilnehmer = models.ForeignKey(Teilnehmer, on_delete=models.PROTECT, null=True)
     wktn_bezirksturnfest = models.ForeignKey(Bezirksturnfest, on_delete=models.PROTECT, null=True)
