@@ -32,6 +32,8 @@ urlpatterns = [
     path('ergebnis_erfassen/', views.ergebnis_erfassen, name='ergebnis_erfassen'),
     path('ergebnis_create/', views.ErgebnisCreateView.as_view(), name='ergebnis_create'),
     path('ergebnis_edit/<int:pk>/', views.ErgebnisUpdateView.as_view(), name='ergebnis_edit'),
+    path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
+    path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
 
     path('auswertung', views.report_auswertung, name='auswertung'),
 ]

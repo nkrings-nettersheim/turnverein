@@ -142,7 +142,7 @@ class BezirksturnfestErgebnisse(models.Model):
     ergebnis_ranking = models.IntegerField(null=True, blank=True, default=0)
 
     def __str__(self):
-        return self.ergebnis_teilnehmer
+        return str(self.ergebnis_teilnehmer)
 
     def save(self, *args, **kwargs):
         self.ergebnis_sprung_s = self.ergebnis_sprung_a + self.ergebnis_sprung_b
