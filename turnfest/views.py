@@ -123,7 +123,7 @@ class TeilnehmerCreateView(CreateView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_create.html"
     form_class = TeilnehmerErfassenForm
-    #fields = '__all__'
+    # fields = '__all__'
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
@@ -132,6 +132,7 @@ class TeilnehmerList(ListView):
 
     ordering = ['teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_name']
 
+
 class TeilnehmerDetailView(DetailView):
     model = Teilnehmer
 
@@ -139,7 +140,7 @@ class TeilnehmerDetailView(DetailView):
 class TeilnehmerUpdateView(UpdateView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_update.html"
-    #fields = '__all__'
+    # fields = '__all__'
     form_class = TeilnehmerErfassenForm
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
@@ -489,10 +490,10 @@ def ergebnis_erfassen_suche(request):
         if teilnehmer:
             try:
                 ergebnis = BezirksturnfestErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
-                #return redirect("/turnfest/ergebnis_edit/" + str(ergebnis.id) + '/')
+                # return redirect("/turnfest/ergebnis_edit/" + str(ergebnis.id) + '/')
                 return redirect("/turnfest/edit/ergebnis/" + str(ergebnis.id) + '/')
             except:
-                #return redirect("turnfest:ergebnis_create")
+                # return redirect("turnfest:ergebnis_create")
                 return redirect("/turnfest/add/ergebnis" + "/?start=" + startnummer)
 
         else:
@@ -519,7 +520,7 @@ class ErgebnisCreateView(CreateView):
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
-    #fields = '__all__'
+    # fields = '__all__'
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
 
 
@@ -533,7 +534,7 @@ class ErgebnisUpdateView(UpdateView):
 def add_ergebnis(request):
     if request.method == "POST":
         form = ErgebnisTeilnehmererfassenForm(request.POST)
-        #assert False
+        # assert False
         if form.is_valid():
             item = form.save(commit=False)
             item.save()
@@ -581,7 +582,6 @@ def report_auswertung(request):
     # Create the PDF object, using the buffer as its "file."
     p = canvas.Canvas(buffer, pagesize=A4)
 
-
     # Holen der Seitenabmessung
     breite, hoehe = A4
 
@@ -620,9 +620,9 @@ def report_auswertung(request):
         p.drawString(17.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
         p.drawString(19.3 * cm, hoehe - (h * cm) + 0.2 * cm, 'Medaillie')
 
-        #p.setFillColorRGB(0, 0, 0.77)
+        # p.setFillColorRGB(0, 0, 0.77)
 
-        #h = h + 1
+        # h = h + 1
         jahr_2 = ""
         rang = 1
         ergebnis_summe_vorheriger = 0
@@ -633,7 +633,7 @@ def report_auswertung(request):
                 p.setFillColor(colors.aquamarine)
                 p.rect(0.2 * cm, hoehe - (h * cm) + 0.4 * cm, 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
                 p.setFillColor(colors.black)
-                p.drawString(0.5 * cm, hoehe - (h * cm)+ 0.6 * cm, "Jahrgang: " + str(jahr))
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.6 * cm, "Jahrgang: " + str(jahr))
                 jahr_2 = jahr
                 rang = 1
                 ergebnis_summe_vorheriger = 0
@@ -647,7 +647,8 @@ def report_auswertung(request):
 
             p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer.teilnehmer_name) + " " +
                          str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname))
-            p.drawString(5.0 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+            p.drawString(5.0 * cm, hoehe - (h * cm),
+                         str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
             p.drawString(8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_sprung_s))
             p.drawString(9.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_mini_s))
             p.drawString(11.2 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_reck_s))
@@ -661,7 +662,7 @@ def report_auswertung(request):
                 medaille = 'Bronze'
             elif 48 <= ergebnis.ergebnis_summe < 64:
                 medaille = 'Silber'
-            elif ergebnis.ergebnis_summe >=64:
+            elif ergebnis.ergebnis_summe >= 64:
                 medaille = 'Gold'
             else:
                 medaille = "-"
@@ -671,6 +672,47 @@ def report_auswertung(request):
             h = h + 0.5
             rang = rang + 1
 
+        if ergebnisse:
+            h = h + 1
+            p.line(0.2 * cm, hoehe - (h * cm), 20.8 * cm, hoehe - (h * cm))
+
+            h = h + 1
+            p.setFillColorRGB(1, 0.6, 0.8)
+            p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+
+            p.setFillGray(0.0)
+            p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, meisterschaft.meisterschaft +  " " + meisterschaft.meisterschaft_gender)
+
+            meister_innen = BezirksturnfestErgebnisse.objects.filter(
+                ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
+                ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(meisterschaft.meisterschaft_bis),
+                ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender).order_by("-ergebnis_summe")
+#            assert False
+            h = h + 0.5
+
+            i = 0  #zähler
+            ergebnis_zwischen = 0  # zwischenspeicherung des vorherigen ergebnisses
+            for meister_in in meister_innen:
+                if i > 0:
+                    if ergebnis_zwischen == meister_in.ergebnis_summe:
+                        p.drawString(1.5 * cm, hoehe - (h * cm), str(meister_in.ergebnis_teilnehmer))
+                        p.drawString(5.0 * cm, hoehe - (h * cm),
+                                     str(meister_in.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+                        p.drawString(9.5 * cm, hoehe - (h * cm), str(meister_in.ergebnis_summe) + " " + "Punkte")
+                else:
+                    p.drawString(1.5 * cm, hoehe - (h * cm), str(meister_in.ergebnis_teilnehmer))
+                    p.drawString(5.0 * cm, hoehe - (h * cm),
+                                 str(meister_in.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+                    p.drawString(9.5 * cm, hoehe - (h * cm), str(meister_in.ergebnis_summe) + " " + "Punkte")
+
+                ergebnis_zwischen = meister_in.ergebnis_summe
+                i = i + 1
+                h = h + 0.4
+
+        current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
+        p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
+
+
         p.showPage()  # Erzwingt eine neue Seite
 
     # Close the PDF object cleanly, and we're done.
@@ -679,4 +721,84 @@ def report_auswertung(request):
     # FileResponse sets the Content-Disposition header so that browsers
     # present the option to save the file.
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=False, filename="Ergebnislisten.pdf")
+    return FileResponse(buffer, as_attachment=True, filename="Ergebnislisten.pdf")
+
+
+def report_urkunden(request):
+    meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans-Bold.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", font_path))
+
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer, pagesize=A4)
+
+    # Holen der Seitenabmessung
+    breite, hoehe = A4
+
+    for meisterschaft in meisterschaften:
+        ergebnisse = BezirksturnfestErgebnisse.objects.filter(
+            ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
+            ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(meisterschaft.meisterschaft_bis),
+            ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender
+        ).order_by('ergebnis_teilnehmer__teilnehmer_geburtsjahr', '-ergebnis_summe')
+
+        jahr_2 = ""
+        rang = 1
+        ergebnis_summe_vorheriger = 0
+        for ergebnis in ergebnisse:
+            h = 15
+            jahr = datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr), "%Y-%m-%d").year
+            if jahr != jahr_2:
+                jahr_2 = jahr
+                rang = 1
+                ergebnis_summe_vorheriger = 0
+
+            if 16 <= ergebnis.ergebnis_summe < 48:
+                medaille = 'Bronze'
+            elif 48 <= ergebnis.ergebnis_summe < 64:
+                medaille = 'Silber'
+            elif ergebnis.ergebnis_summe >= 64:
+                medaille = 'Gold'
+            else:
+                medaille = "-"
+
+            h = 18
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe - (h * cm), "81. Bezirksturnfest")
+            h = h + 1
+            p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft)
+            h = h + 1
+            p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft_gender)
+            h = h + 1
+            p.drawCentredString(breite / 2, hoehe - (h * cm), medaille)
+            h = h + 1
+            p.drawCentredString(breite / 2, hoehe - (h * cm), "Jahrgang: " + str(jahr))
+            h = h + 1
+
+            if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+                rang = rang - 1
+                p.drawCentredString(breite / 2, hoehe - (h * cm), "Rang: " + str(rang))
+                rang = rang + 1
+            else:
+                p.drawCentredString(breite / 2, hoehe - (h * cm), "Rang: " + str(rang))
+
+            h = h + 1
+            p.drawCentredString(breite / 2, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer))
+
+
+            ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+            rang = rang + 1
+            p.showPage()
+
+    # Close the PDF object cleanly, and we're done.
+    p.save()
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=False, filename="Urkunden_Bezirksturnfest.pdf")
