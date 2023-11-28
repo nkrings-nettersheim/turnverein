@@ -8,7 +8,7 @@ from datetime import datetime
 from django.conf import settings
 from django.db.models import Count, DateField, DateTimeField
 from django.db.models.functions import Cast, TruncDate
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import ListView, DetailView
@@ -37,7 +37,8 @@ from weasyprint import HTML, CSS
 from turnverein.settings import BASE_DIR
 
 from .models import Vereine, Teilnehmer, Wettkampfteilnahme, Geraete, Riegen, BezirksturnfestErgebnisse, Meisterschaften
-from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm, TeilnehmerErfassenForm
+from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm, TeilnehmerErfassenForm, \
+    ErgebnisTeilnehmererfassenForm
 
 
 # assert False
@@ -488,9 +489,11 @@ def ergebnis_erfassen_suche(request):
         if teilnehmer:
             try:
                 ergebnis = BezirksturnfestErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
-                return redirect("/turnfest/ergebnis_edit/" + str(ergebnis.id) + '/')
+                #return redirect("/turnfest/ergebnis_edit/" + str(ergebnis.id) + '/')
+                return redirect("/turnfest/edit/ergebnis/" + str(ergebnis.id) + '/')
             except:
-                return redirect("turnfest:ergebnis_create")
+                #return redirect("turnfest:ergebnis_create")
+                return redirect("/turnfest/add/ergebnis" + "/?start=" + startnummer)
 
         else:
             form = ErgebnisTeilnehmerSuchen()
@@ -515,15 +518,48 @@ def ergebnis_erfassen(request):
 class ErgebnisCreateView(CreateView):
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
-    fields = '__all__'
+    form_class = ErgebnisTeilnehmererfassenForm
+    #fields = '__all__'
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
 
 
 class ErgebnisUpdateView(UpdateView):
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
-    fields = '__all__'
+    form_class = ErgebnisTeilnehmererfassenForm
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
+
+
+def add_ergebnis(request):
+    if request.method == "POST":
+        form = ErgebnisTeilnehmererfassenForm(request.POST)
+        #assert False
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.save()
+            return redirect('/turnfest/ergebnis_erfassen_suche/')
+    else:
+        startnummer = request.GET.get('start')
+        teilnehmer = Teilnehmer.objects.get(id=startnummer)
+
+        form = ErgebnisTeilnehmererfassenForm()
+        form.turnerin = teilnehmer.teilnehmer_name + " " + teilnehmer.teilnehmer_vorname
+        form.teilnehmer_id = teilnehmer.id
+    return render(request, 'turnfest/ergebnis_erfassen.html', {'form': form})
+
+
+def edit_ergebnis(request, id=None):
+    item = get_object_or_404(BezirksturnfestErgebnisse, id=id)
+    form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
+    # assert False
+    if form.is_valid():
+        form.save()
+        return redirect('/turnfest/ergebnis_erfassen_suche/')
+
+    form.id = item.id
+    form.turnerin = item.ergebnis_teilnehmer
+    form.teilnehmer_id = item.ergebnis_teilnehmer.id
+    return render(request, 'turnfest/ergebnis_erfassen.html', {'form': form})
 
 
 ##########################################################################
