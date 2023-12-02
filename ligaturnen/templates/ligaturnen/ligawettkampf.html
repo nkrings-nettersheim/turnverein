@@ -1,9 +1,8 @@
-{% extends "base_bezirksturnfest.html" %}
+{% extends "base_ligaturnen.html" %}
 
 {% block title %}
     Turnfest
 {% endblock %}
-
 
 {% block content %}
 
@@ -13,7 +12,7 @@
     <div class="row">
         <div class="col-3"></div>
         <div class="col-6 text-center">
-            <h2>Alles rund ums Bezirksturnfest</h2>
+            <h2>Alles rund ums Ligaturnfest</h2>
 
         </div>
         <div class="col-3"></div>
@@ -23,7 +22,7 @@
         <div class="col-6 text-center">
             <h3>Teilnehmermeldung (Excel)</h3>
             <p>Bitte diese Datei als Basis für die Teilnehmermeldung verwenden. <br>Bitte die Musterzeile vor dem Versandt löschen.</p>
-                <a href="{% url 'ligaturnen:download' %}?file_name=Teilnehmer_Bezirksturnfest.xlsx">
+                <a href="{% url 'ligaturnen:download' %}?file_name=Teilnehmer_Ligaturnen.xlsx">
                         <button type="button" class="btn btn-primary"><i class="fa fa-download"> Öffnen</i></button>
                 </a>
         </div>

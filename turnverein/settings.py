@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     # own and local
     'turnfest',
+    'ligaturnen',
 ]
 
 MIDDLEWARE = [
@@ -128,6 +129,9 @@ DATETIME_FORMAT = '%d-%m-%Y %H:%M:%S'
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

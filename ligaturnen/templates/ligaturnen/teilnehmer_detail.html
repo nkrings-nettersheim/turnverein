@@ -12,16 +12,17 @@
     <div class="row">
         <div class="col-sm-2"></div>
         <div class="col-sm-2">
-            <a href="{% url 'turnfest:teilnehmer_list' %}" class="btn btn-secondary">Teilnehmerliste</a>
+            <a href="{% url 'ligaturnen:teilnehmer_list' %}" class="btn btn-secondary">Teilnehmerliste</a>
         </div>
         <div class="col-sm-4">   <h3 class="text-center">Detailansicht Teilnehmer/innen</h3></div>
         <div class="col-sm-2"></div>
         <div class="col-sm-2"></div>
     </div>
     <p></p>
+
     <div class="row">
         <div class="col-sm-2"></div>
-        <div class="col-sm-2">Start Nr.:</div>
+        <div class="col-sm-2">Startnr.:</div>
         <div class="col-sm-6">{{ object.id }}</div>
         <div class="col-sm-2"></div>
     </div>
@@ -58,7 +59,19 @@
     <div class="row">
         <div class="col-sm-2"></div>
         <div class="col-sm-2">Anwesend:</div>
-        <div class="col-sm-6">{{ object.teilnehmer_anwesend|yesno:"Ja,Nein" }}</div>
+        <div class="col-sm-6">{{ object.teilnehmer_anwesend }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Liga:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_liga }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">Mannschaft:</div>
+        <div class="col-sm-6">{{ object.teilnehmer_mannschaft }}</div>
         <div class="col-sm-2"></div>
     </div>
     <div class="row">

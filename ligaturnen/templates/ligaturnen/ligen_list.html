@@ -1,0 +1,47 @@
+{% extends "base_ligaturnen.html" %}
+
+{% block title %}
+    Turnverein
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-8"><h3 class="text-center">Liste der Ligen</h3></div>
+            <div class="col-sm-2">
+                <a href="{% url 'ligaturnen:ligen_create' %}" class="btn btn-secondary">Neue Liga anlegen</a>
+            </div>
+    </div>
+    <p></p>
+    <table class="table table-hover">
+        <thead>
+          <tr>
+              <th class="col-sm-2">Liga</th>
+              <th class="col-sm-2">ab</th>
+              <th class="col-sm-2">bis</th>
+              <th class="col-sm-1">Bearbeiten</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for ligen in object_list %}
+            <tr>
+                <td>{{ ligen.liga }}</td>
+                <td>{{ ligen.liga_ab }}</td>
+                <td>{{ ligen.liga_bis }}</td>
+                  <td class="col-sm-1">
+                      <a href="{% url 'ligaturnen:ligen_edit' ligen.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-pen-to-square" title="ändern"></i></a>
+                      <a href="{% url 'ligaturnen:ligen_detail' ligen.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-eye" title="anzeigen"></i></a>
+                      <a href="{% url 'ligaturnen:ligen_delete' ligen.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-trash-can" title="löschen"></i></a>
+                  </td>
+            </tr>
+
+            {% empty %}
+            <li>Noch keine Ligen angelegt</li>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

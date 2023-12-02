@@ -322,7 +322,7 @@ def report_geraetelisten(request):
 
     # Create a list to store the content for the PDF
     content = []
-
+    #teilnehmer_alle = []
     for riege in riegen:
         for geraet in geraete:
 
@@ -393,19 +393,6 @@ def report_geraetelisten(request):
                                                                                  'teilnehmer_geburtsjahr',
                                                                                  'teilnehmer_sprung'
                                                                                  )
-
-            # print("Tuple: " + str(teilnehmer_alle))
-            # formatierter_queryset = teilnehmer_alle.annotate(
-            #    formatiertes_datum=Cast('teilnehmer_geburtsjahr', str('21.05.1965'))
-            #    formatiertes_datum = TruncDate('teilnehmer_geburtsjahr', output_field=DateTimeField())
-            # )
-
-            # Funktion zum Formatieren des Datums
-            # def formatiere_datum(datum):
-            #    return datum.strftime('%Y-%m-%d')
-
-            # Formatieren der Datumsdaten
-            # formatierte_daten = [[id, teilnehmer_name,  formatiere_datum(datum)] for name, datum in teilnehmer_alle]
 
             # Add a heading to the PDF
             content.append(Paragraph('Bezirksturnfest 2024', styles['CenterAlign20']))
