@@ -1,0 +1,67 @@
+{% extends "base_ligaturnen.html" %}
+
+{% block title %}
+    Turnverein - Vereine
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">
+            <a href="{% url 'ligaturnen:vereine_list' %}" class="btn btn-secondary">Liste vereine</a>
+        </div>
+        <div class="col-sm-4"><h3 class="text-center">Einzelansicht Verein</h3></div>
+        <div class="col-sm-2">
+            <a href="{% url 'ligaturnen:vereine_edit' object.id %} " class="btn btn-secondary">Verein ändern</a>
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+    <p></p>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">Vereinsname:</div>
+        <div class="col-sm-4">{{ object.verein_name }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">Kurzname:</div>
+        <div class="col-sm-4">{{ object.verein_name_kurz|default_if_none:"" }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">Strasse:</div>
+        <div class="col-sm-4">{{ object.verein_strasse|default_if_none:"" }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">PLZ:</div>
+        <div class="col-sm-4">{{ object.verein_plz|default_if_none:"" }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">Ort:</div>
+        <div class="col-sm-4">{{ object.verein_Ort|default_if_none:"" }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">Telefon:</div>
+        <div class="col-sm-4">{{ object.verein_telefon|default_if_none:"" }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-4">E-Mail:</div>
+        <div class="col-sm-4">{{ object.verein_email|default_if_none:"" }}</div>
+        <div class="col-sm-2"></div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="de">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    <link href="{% static 'fontawesomefree/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+
+</head>
+
+<body>
+
+    {% include "header.html" %}
+
+    {% include "nav_ligaturnen.html" %}
+    {% block content %}{% endblock %}
+
+    {% include "footer_ligaturnen.html" %}
+
+    {% bootstrap_javascript %}
+    <script src="{% static 'js/base.js' %}"></script>
+
+</body>
+</html>

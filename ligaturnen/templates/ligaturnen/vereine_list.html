@@ -1,0 +1,55 @@
+{% extends "base_ligaturnen.html" %}
+
+{% block title %}
+    Turnverein - Vereine
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-8"><h3 class="text-center">Liste der Vereine</h3></div>
+            <div class="col-sm-2">
+                <a href="{% url 'ligaturnen:vereine_create' %}" class="btn btn-secondary">Neuen Verein anlegen</a>
+            </div>
+    </div>
+    <p></p>
+    <table class="table table-hover">
+        <thead>
+          <tr>
+              <th class="col-sm-2">Vereins-Name</th>
+              <th class="col-sm-2">Vereins-Kürzel</th>
+              <th class="col-sm-2">Strasse</th>
+              <th class="col-sm-1">PLZ</th>
+              <th class="col-sm-2">Ort</th>
+              <th class="col-sm-1">Telefon</th>
+              <th class="col-sm-1">E-Mail</th>
+              <th class="col-sm-1">Bearbeiten</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for vereine in object_list %}
+            <tr>
+                <td>{{ vereine.verein_name }}</td>
+                <td>{{ vereine.verein_name_kurz|default_if_none:"" }}</td>
+                <td>{{ vereine.verein_strasse|default_if_none:"" }}</td>
+                <td>{{ vereine.verein_plz|default_if_none:"" }}</td>
+                <td>{{ vereine.verein_ort|default_if_none:"" }}</td>
+                <td>{{ vereine.verein_telefon|default_if_none:"" }}</td>
+                <td>{{ vereine.verein_email|default_if_none:"" }}</td>
+                  <td class="col-sm-1">
+                      <a href="{% url 'ligaturnen:vereine_edit' vereine.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-pen-to-square" title="ändern"></i></a>
+                      <a href="{% url 'ligaturnen:vereine_detail' vereine.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-eye" title="anzeigen"></i></a>
+                      <a href="{% url 'ligaturnen:vereine_delete' vereine.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-trash-can" title="löschen"></i></a>
+                  </td>
+            </tr>
+
+            {% empty %}
+            <li>Noch keine Vereine angelegt</li>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

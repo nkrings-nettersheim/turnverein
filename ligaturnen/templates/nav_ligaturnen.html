@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-sm navbar-dark bg-secondary">
+<div class="container">
+    <!-- Links -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'ligaturnen:index'%}">Startseite</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'ligaturnen:ligawettkampf'%}">Ligaturnen</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'ligaturnen:teilnehmer_list'%}">Teilnehmer</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'ligaturnen:geraetelisten'%}">Gerätelisten</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'ligaturnen:ergebnis_erfassen_suche'%}">Ergebnisse erfassen</a>
+      </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Wettkampfende</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:auswertungeinzel'%}">Auswertung Einzel</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:auswertungmannschaft'%}">Auswertung Mannschaft</a></li>
+          </ul>
+      </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Referenzlisten</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_list'%}">Vereine</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:ligen_list'%}">Ligen</a></li>
+          </ul>
+      </li>
+    </ul>
+  </div>
+</nav>

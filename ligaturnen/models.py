@@ -1,7 +1,5 @@
 from django.db import models
 from django.core.validators import MaxValueValidator
-from django.db.models import CharField
-import datetime
 
 
 class Vereine(models.Model):
@@ -25,45 +23,13 @@ class Geraete(models.Model):
         return self.geraet_name
 
 
-class Medaille(models.Model):
-    medaille = models.CharField(max_length=30, blank=True, default='', null=True)
-    punkte_ab = models.IntegerField(blank=True, null=True)
-    punkte_bis = models.IntegerField(blank=True, null=True)
+class Ligen(models.Model):
+    liga = models.CharField(max_length=50, blank=True, default='', null=True)
+    liga_ab = models.DateField(default='1900-01-01')
+    liga_bis = models.DateField(default='1900-01-01')
 
     def __str__(self):
-        return self.medaille
-
-
-class Meisterschaften(models.Model):
-    GENDER = (
-        ('w', 'weiblich'),
-        ('m', 'männlich'),
-    )
-    meisterschaft = models.CharField(max_length=30, blank=True, default='', null=True)
-    meisterschaft_gender = models.CharField(max_length=1, choices=GENDER, default='1')
-    meisterschaft_ab = models.DateField(default='1900-01-01')
-    meisterschaft_bis = models.DateField(default='1900-01-01')
-
-    def __str__(self):
-        return self.meisterschaft + " " + self.meisterschaft_gender
-
-
-class Bezirksturnfest(models.Model):
-    bezirksturnfest = models.CharField(max_length=50, blank=True, default='', null=True)
-    austragungsort = models.CharField(max_length=30, blank=True, default='', null=True)
-    wettkampftag = models.DateField()
-
-    def __str__(self):
-        return self.bezirksturnfest
-
-
-class Riegen(models.Model):
-    riege = models.CharField(max_length=50, blank=True, default='', null=True)
-    riege_ab = models.DateField(default='1900-01-01')
-    riege_bis = models.DateField(default='1900-01-01')
-
-    def __str__(self):
-        return self.riege
+        return self.liga
 
 
 class Teilnehmer(models.Model):
@@ -71,15 +37,37 @@ class Teilnehmer(models.Model):
         ('w', 'weiblich'),
         ('m', 'männlich'),
     )
+    LIGA_TAG = (
+        ('1', '1. Wettkampftag'),
+        ('2', '2. Wettkampftag'),
+    )
+    LIGA = (
+        ('A', 'A-Liga'),
+        ('B', 'B-Liga'),
+        ('C', 'C-Liga'),
+        ('D', 'D-Liga'),
+        ('E', 'E-Liga'),
+        ('F', 'F-Liga'),
+    )
+    MANNSCHAFT = (
+        ('1', '1. Mannschaft'),
+        ('2', '2. Mannschaft'),
+        ('3', '3. Mannschaft'),
+    )
     teilnehmer_name = models.CharField(max_length=30, blank=True, default='', null=True)
     teilnehmer_vorname = models.CharField(max_length=30, blank=True, default='', null=True)
     teilnehmer_geburtsjahr = models.DateField(default='1900-01-01')
     teilnehmer_gender = models.CharField(max_length=1, choices=GENDER, default='w')
     teilnehmer_verein = models.ForeignKey(Vereine, on_delete=models.PROTECT, null=True)
     teilnehmer_anwesend = models.BooleanField(default=True, null=True)
+    teilnehmer_liga_tag = models.CharField(max_length=1, choices=LIGA_TAG, default='1')
+    teilnehmer_liga = models.CharField(max_length=1, choices=LIGA, default='A')
+    teilnehmer_mannschaft = models.CharField(max_length=1, choices=MANNSCHAFT, default='1')
+    teilnehmer_ak = models.BooleanField(default=False, null=True)
     teilnehmer_sprung = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True, default=0)
     teilnehmer_mini = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True, default=0)
-    teilnehmer_reck_stufenbarren = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True, default=0)
+    teilnehmer_reck_stufenbarren = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True,
+                                                       default=0)
     teilnehmer_balken = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True, default=0)
     teilnehmer_barren = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True, default=0)
     teilnehmer_boden = models.IntegerField(validators=[MaxValueValidator(10)], null=True, blank=True, default=0)
@@ -87,39 +75,16 @@ class Teilnehmer(models.Model):
     def __str__(self):
         return self.teilnehmer_name + ' ' + self.teilnehmer_vorname
 
-    def formatiertes_datum(self):
-        return self.teilnehmer_geburtsjahr.strftime('%Y')
-
-    @property
-    def full_name(self):
-        "Returns the person's full name."
-        return f"{self.teilnehmer_name} {self.teilnehmer_vorname}"
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['teilnehmer_name',
                                             'teilnehmer_vorname',
                                             'teilnehmer_geburtsjahr',
-                                            'teilnehmer_verein'], name='unique name_vorname_geburtsjahr_verein'),
+                                            'teilnehmer_verein'], name='unique liga_name_vorname_geburtsjahr_verein'),
         ]
 
 
-class Wettkampfteilnahme(models.Model):
-    wktn_teilnehmer = models.ForeignKey(Teilnehmer, on_delete=models.PROTECT, null=True)
-    wktn_bezirksturnfest = models.ForeignKey(Bezirksturnfest, on_delete=models.PROTECT, null=True)
-    wktn_anwesend = models.BooleanField(default=False, null=True)
-    wktn_sprung = models.BooleanField(default=False, null=True)
-    wktn_mini = models.BooleanField(default=False, null=True)
-    wktn_reck = models.BooleanField(default=False, null=True)
-    wktn_balken = models.BooleanField(default=False, null=True)
-    wktn_barren = models.BooleanField(default=False, null=True)
-    wktn_boden = models.BooleanField(default=False, null=True)
-
-    def __str__(self):
-        return self.wktn_teilnehmer
-
-
-class BezirksturnfestErgebnisse(models.Model):
+class LigaturnenErgebnisse(models.Model):
     ergebnis_teilnehmer = models.ForeignKey(Teilnehmer, on_delete=models.PROTECT, null=True)
     ergebnis_sprung_a = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_sprung_b = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
@@ -140,7 +105,6 @@ class BezirksturnfestErgebnisse(models.Model):
     ergebnis_boden_b = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_boden_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_ranking = models.IntegerField(null=True, blank=True, default=0)
 
     def __str__(self):
         return str(self.ergebnis_teilnehmer)
@@ -156,4 +120,4 @@ class BezirksturnfestErgebnisse(models.Model):
         self.ergebnis_summe = self.ergebnis_sprung_s + self.ergebnis_mini_s + self.ergebnis_reck_s + \
                               self.ergebnis_balken_s + self.ergebnis_barren_s + self.ergebnis_boden_s
 
-        super(BezirksturnfestErgebnisse, self).save(*args, **kwargs)
+        super(LigaturnenErgebnisse, self).save(*args, **kwargs)

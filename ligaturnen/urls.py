@@ -1,15 +1,14 @@
 from django.urls import path
 from . import views
-from .views import index, VereineDeleteView, VereineListView
+from .views import index
 
-app_name = 'turnfest'
+app_name = 'ligaturnen'
 
 urlpatterns = [
     path('', index, name='index'),
-    path('bezirksturnfest/', views.bezirksturnfest, name='bezirksturnfest'),
-    #path('ligawettkampf/', views.ligawettkampf, name='ligawettkampf'),
     path('impressum/', views.impressum, name='impressum'),
     path('datenschutz/', views.datenschutz, name='datenschutz'),
+    path('ligawettkampf/', views.ligawettkampf, name='ligawettkampf'),
 
     path('vereine_create/', views.VereineCreateView.as_view(), name='vereine_create'),
     path('vereine_list/', views.VereineListView.as_view(), name='vereine_list'),
@@ -17,7 +16,11 @@ urlpatterns = [
     path('vereine_edit/<int:pk>/', views.VereineUpdateView.as_view(), name='vereine_edit'),
     path('vereine_delete/<int:pk>/', views.VereineDeleteView.as_view(), name='vereine_delete'),
 
-    path('report_vereine/', views.report_vereine, name='report_vereine'),
+    path('ligen_create/', views.LigenCreateView.as_view(), name='ligen_create'),
+    path('ligen_list/', views.LigenListView.as_view(), name='ligen_list'),
+    path('ligen_detail/<int:pk>/', views.LigenDetailView.as_view(), name='ligen_detail'),
+    path('ligen_edit/<int:pk>/', views.LigenUpdateView.as_view(), name='ligen_edit'),
+    path('ligen_delete/<int:pk>/', views.LigenDeleteView.as_view(), name='ligen_delete'),
 
     path('teilnehmer_create/', views.TeilnehmerCreateView.as_view(), name='teilnehmer_create'),
     path('teilnehmer_list/', views.TeilnehmerList.as_view(), name='teilnehmer_list'),
@@ -25,6 +28,8 @@ urlpatterns = [
     path('teilnehmer_edit/<int:pk>/', views.TeilnehmerUpdateView.as_view(), name='teilnehmer_edit'),
     path('teilnehmer_delete/<int:pk>/', views.TeilnehmerDeleteView.as_view(), name='teilnehmer_delete'),
     path('teilnehmer_upload', views.teilnehmer_upload, name='teilnehmer_upload'),
+
+    path('download/', views.download_document, name='download'),
 
     path('geraetelisten', views.report_geraetelisten, name='geraetelisten'),
 
@@ -35,6 +40,6 @@ urlpatterns = [
     path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
 
-    path('auswertung', views.report_auswertung, name='auswertung'),
-    path('urkunden', views.report_urkunden, name='urkunden'),
+    path('auswertungeinzel', views.report_auswertung_einzel, name='auswertungeinzel'),
+    path('auswertungmannschaft', views.report_auswertung_mannschaft, name='auswertungmannschaft'),
 ]

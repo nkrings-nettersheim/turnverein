@@ -1,0 +1,42 @@
+{% extends "base_bezirksturnfest.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+    Turnverein - Teilnehmer/in löschen
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2">
+            <a href="{% url 'ligaturnen:teilnehmer_list' %}" class="btn btn-secondary">Teilnehmerliste</a>
+        </div>
+        <div class="col-sm-4">   <h3 class="text-center">Teilnehmer/in löschen</h3></div>
+        <div class="col-sm-2"></div>
+        <div class="col-sm-2"></div>
+    </div>
+    <p></p>
+
+    <form action="" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-8">
+                {{ form|crispy }}
+            </div>
+            <div class="col-sm-2"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4">Bist du sicher die/ Teilnehmerin/Teilnehmerin: "{{ teilnehmer.teilnehmer_vorname}} {{ teilnehmer.teilnehmer_name}} " zu löschen ?</div>
+            <div class="col-sm-4 text-end">
+                <button class="btn btn-danger" type="submit">Ja, ich bin sicher</button>
+            </div>
+            <div class="col-sm-2"></div>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}
