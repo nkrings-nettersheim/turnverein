@@ -28,7 +28,10 @@
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Referenzlisten</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_list'%}">Vereine</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_upload'%}">Vereine upload</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:teilnehmer_upload'%}">Teilnehmer upload</a></li>
             <li><a class="dropdown-item" href="{% url 'ligaturnen:ligen_list'%}">Ligen</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:delete_tables'%}">Tabellen löschen</a></li>
           </ul>
       </li>
     </ul>

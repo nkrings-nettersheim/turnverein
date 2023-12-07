@@ -15,6 +15,7 @@ urlpatterns = [
     path('vereine_detail/<int:pk>/', views.VereineDetailView.as_view(), name='vereine_detail'),
     path('vereine_edit/<int:pk>/', views.VereineUpdateView.as_view(), name='vereine_edit'),
     path('vereine_delete/<int:pk>/', views.VereineDeleteView.as_view(), name='vereine_delete'),
+    path('vereine_upload', views.vereine_upload, name='vereine_upload'),
 
     path('ligen_create/', views.LigenCreateView.as_view(), name='ligen_create'),
     path('ligen_list/', views.LigenListView.as_view(), name='ligen_list'),
@@ -42,4 +43,6 @@ urlpatterns = [
 
     path('auswertungeinzel', views.report_auswertung_einzel, name='auswertungeinzel'),
     path('auswertungmannschaft', views.report_auswertung_mannschaft, name='auswertungmannschaft'),
+
+    path('delete_tables', views.delete_tables_ligaturnen, name='delete_tables'),
 ]

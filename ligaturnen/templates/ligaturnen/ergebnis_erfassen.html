@@ -24,137 +24,226 @@
         {% csrf_token %}
         {{ form.non_field_errors }}
         <input type="hidden" name="ergebnis_teilnehmer" value="{{ form.teilnehmer_id }}">
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_sprung_a.id_for_label }}" class="col-sm-2 control-label">Sprung A-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_sprung_a }}
-                <div class="text-danger">{{ form.ergebnis_sprung_a.errors }}</div>
+        <input type="hidden" name="geraet" value="{{ form.geraet }}">
+
+        {% if form.add %}
+            <input type="hidden" name="ergebnis_sprung_a" value="0">
+            <input type="hidden" name="ergebnis_sprung_b" value="0">
+            <input type="hidden" name="ergebnis_sprung_s" value="0">
+            <input type="hidden" name="ergebnis_mini_a" value="0">
+            <input type="hidden" name="ergebnis_mini_b" value="0">
+            <input type="hidden" name="ergebnis_mini_s" value="0">
+            <input type="hidden" name="ergebnis_reck_a" value="0">
+            <input type="hidden" name="ergebnis_reck_b" value="0">
+            <input type="hidden" name="ergebnis_reck_s" value="0">
+            <input type="hidden" name="ergebnis_balken_a" value="0">
+            <input type="hidden" name="ergebnis_balken_b" value="0">
+            <input type="hidden" name="ergebnis_balken_s" value="0">
+            <input type="hidden" name="ergebnis_barren_a" value="0">
+            <input type="hidden" name="ergebnis_barren_b" value="0">
+            <input type="hidden" name="ergebnis_barren_s" value="0">
+            <input type="hidden" name="ergebnis_boden_a" value="0">
+            <input type="hidden" name="ergebnis_boden_b" value="0">
+            <input type="hidden" name="ergebnis_boden_s" value="0">
+            <input type="hidden" name="ergebnis_summe" value="0">
+        {% endif %}
+
+        {% if form.geraet == '1' %}
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_sprung_a.id_for_label }}" class="col-sm-2 control-label">Sprung A-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_sprung_a }}
+                    <div class="text-danger">{{ form.ergebnis_sprung_a.errors }}</div>
+                </div>
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2"></div>
             </div>
-            <div class="col-sm-5"></div>
-            <div class="col-sm-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_sprung_b.id_for_label }}" class="col-sm-2 control-label">Sprung B-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_sprung_b }}
-                <div class="text-danger">{{ form.ergebnis_sprung_b.errors }}</div>
+
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_sprung_b.id_for_label }}" class="col-sm-2 control-label">Sprung B-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_sprung_b }}
+                    <div class="text-danger">{{ form.ergebnis_sprung_b.errors }}</div>
+                </div>
+                <div class="col-sm-1">{{ form.ergebnis_sprung_s }}</div>
+                <div class="col-sm-6"></div>
             </div>
-            <div class="col-sm-1">{{ form.ergebnis_sprung_s }}</div>
-            <div class="col-sm-6"></div>
-        </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Wähle das Eingabefeld aus
+              const inputField = document.getElementById('id_ergebnis_sprung_a');
+
+              // Markiere den Initialwert des Eingabefelds
+              inputField.select();
+            });
+        </script>
+
+        {% endif %}
         <p></p>
-        
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_mini_a.id_for_label }}" class="col-sm-2 control-label">Minitrampolin A-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_mini_a }}
-                <div class="text-danger">{{ form.ergebnis_mini_a.errors }}</div>
+        {% if form.geraet == '2' %}
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_mini_a.id_for_label }}" class="col-sm-2 control-label">Minitrampolin A-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_mini_a }}
+                    <div class="text-danger">{{ form.ergebnis_mini_a.errors }}</div>
+                </div>
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2"></div>
             </div>
-            <div class="col-sm-5"></div>
-            <div class="col-sm-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_mini_b.id_for_label }}" class="col-sm-2 control-label">Minitrampolin B-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_mini_b }}
-                <div class="text-danger">{{ form.ergebnis_mini_b.errors }}</div>
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_mini_b.id_for_label }}" class="col-sm-2 control-label">Minitrampolin B-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_mini_b }}
+                    <div class="text-danger">{{ form.ergebnis_mini_b.errors }}</div>
+                </div>
+                <div class="col-sm-1">{{ form.ergebnis_mini_s }}</div>
+                <div class="col-sm-6"></div>
             </div>
-            <div class="col-sm-1">{{ form.ergebnis_mini_s }}</div>
-            <div class="col-sm-6"></div>
-        </div>
-        <p></p>        
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Wähle das Eingabefeld aus
+              const inputField = document.getElementById('id_ergebnis_mini_a');
 
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_reck_a.id_for_label }}" class="col-sm-2 control-label">Reck/Stufenbarren A-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_reck_a }}
-                <div class="text-danger">{{ form.ergebnis_reck_a.errors }}</div>
-            </div>
-            <div class="col-sm-5"></div>
-            <div class="col-sm-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_reck_b.id_for_label }}" class="col-sm-2 control-label">Reck/Stufenbarren B-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_reck_b }}
-                <div class="text-danger">{{ form.ergebnis_reck_b.errors }}</div>
-            </div>
-            <div class="col-sm-1"> {{ form.ergebnis_reck_s }}</div>
-            <div class="col-sm-6"></div>
-        </div>
-        <p></p>        
+              // Markiere den Initialwert des Eingabefelds
+              inputField.select();
+            });
+        </script>
 
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_balken_a.id_for_label }}" class="col-sm-2 control-label">Balken A-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_balken_a }}
-                <div class="text-danger">{{ form.ergebnis_balken_a.errors }}</div>
-            </div>
-            <div class="col-sm-5"></div>
-            <div class="col-sm-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_balken_b.id_for_label }}" class="col-sm-2 control-label">Balken B-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_balken_b }}
-                <div class="text-danger">{{ form.ergebnis_balken_b.errors }}</div>
-            </div>
-            <div class="col-sm-1">{{ form.ergebnis_balken_s }}</div>
-            <div class="col-sm-6"></div>
-        </div>
+        {% endif %}
         <p></p>        
+        {% if form.geraet == '3' %}
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_reck_a.id_for_label }}" class="col-sm-2 control-label">Reck/Stufenbarren A-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_reck_a }}
+                    <div class="text-danger">{{ form.ergebnis_reck_a.errors }}</div>
+                </div>
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_reck_b.id_for_label }}" class="col-sm-2 control-label">Reck/Stufenbarren B-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_reck_b }}
+                    <div class="text-danger">{{ form.ergebnis_reck_b.errors }}</div>
+                </div>
+                <div class="col-sm-1"> {{ form.ergebnis_reck_s }}</div>
+                <div class="col-sm-6"></div>
+            </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Wähle das Eingabefeld aus
+              const inputField = document.getElementById('id_ergebnis_reck_a');
 
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_barren_a.id_for_label }}" class="col-sm-2 control-label">Barren A-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_barren_a }}
-                <div class="text-danger">{{ form.ergebnis_barren_a.errors }}</div>
+              // Markiere den Initialwert des Eingabefelds
+              inputField.select();
+            });
+        </script>
+        {% endif %}
+        <p></p>
+        {% if form.geraet == '4' %}
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_balken_a.id_for_label }}" class="col-sm-2 control-label">Balken A-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_balken_a }}
+                    <div class="text-danger">{{ form.ergebnis_balken_a.errors }}</div>
+                </div>
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2"></div>
             </div>
-            <div class="col-sm-5"></div>
-            <div class="col-sm-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_barren_b.id_for_label }}" class="col-sm-2 control-label">Barren B-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_barren_b }}
-                <div class="text-danger">{{ form.ergebnis_barren_b.errors }}</div>
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_balken_b.id_for_label }}" class="col-sm-2 control-label">Balken B-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_balken_b }}
+                    <div class="text-danger">{{ form.ergebnis_balken_b.errors }}</div>
+                </div>
+                <div class="col-sm-1">{{ form.ergebnis_balken_s }}</div>
+                <div class="col-sm-6"></div>
             </div>
-            <div class="col-sm-1">{{ form.ergebnis_barren_s }}</div>
-            <div class="col-sm-6"></div>
-        </div>
-        <p></p>        
-        
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_boden_a.id_for_label }}" class="col-sm-2 control-label">Boden A-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_boden_a }}
-                <div class="text-danger">{{ form.ergebnis_boden_a.errors }}</div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Wähle das Eingabefeld aus
+              const inputField = document.getElementById('id_ergebnis_balken_a');
+
+              // Markiere den Initialwert des Eingabefelds
+              inputField.select();
+            });
+        </script>
+
+        {% endif %}
+        <p></p>
+        {% if form.geraet == '5' %}
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_barren_a.id_for_label }}" class="col-sm-2 control-label">Barren A-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_barren_a }}
+                    <div class="text-danger">{{ form.ergebnis_barren_a.errors }}</div>
+                </div>
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2"></div>
             </div>
-            <div class="col-sm-5"></div>
-            <div class="col-sm-2"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2"></div>
-            <label for="{{ form.ergebnis_boden_b.id_for_label }}" class="col-sm-2 control-label">Boden B-Note:</label>
-            <div class="col-sm-1">
-                 {{ form.ergebnis_boden_b }}
-                <div class="text-danger">{{ form.ergebnis_boden_b.errors }}</div>
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_barren_b.id_for_label }}" class="col-sm-2 control-label">Barren B-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_barren_b }}
+                    <div class="text-danger">{{ form.ergebnis_barren_b.errors }}</div>
+                </div>
+                <div class="col-sm-1">{{ form.ergebnis_barren_s }}</div>
+                <div class="col-sm-6"></div>
             </div>
-            <div class="col-sm-1">{{ form.ergebnis_boden_s }}</div>
-            <div class="col-sm-6"></div>
-        </div>
-        <p></p>        
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Wähle das Eingabefeld aus
+              const inputField = document.getElementById('id_ergebnis_barren_a');
+
+              // Markiere den Initialwert des Eingabefelds
+              inputField.select();
+            });
+        </script>
+        {% endif %}
+        <p></p>
+        {% if form.geraet == '6' %}
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_boden_a.id_for_label }}" class="col-sm-2 control-label">Boden A-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_boden_a }}
+                    <div class="text-danger">{{ form.ergebnis_boden_a.errors }}</div>
+                </div>
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <label for="{{ form.ergebnis_boden_b.id_for_label }}" class="col-sm-2 control-label">Boden B-Note:</label>
+                <div class="col-sm-1">
+                     {{ form.ergebnis_boden_b }}
+                    <div class="text-danger">{{ form.ergebnis_boden_b.errors }}</div>
+                </div>
+                <div class="col-sm-1">{{ form.ergebnis_boden_s }}</div>
+                <div class="col-sm-6"></div>
+            </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Wähle das Eingabefeld aus
+              const inputField = document.getElementById('id_ergebnis_boden_a');
+
+              // Markiere den Initialwert des Eingabefelds
+              inputField.select();
+            });
+        </script>
+        {% endif %}
+        <p></p>
 
         <div class="row">
             <div class="col-sm-2"></div>
@@ -176,5 +265,6 @@
         </div>
    </form>
 </div>
+
 
 {% endblock %}

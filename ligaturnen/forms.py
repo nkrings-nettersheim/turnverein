@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Vereine, Teilnehmer, Ligen, LigaturnenErgebnisse
+from .models import Vereine, Teilnehmer, Ligen, LigaturnenErgebnisse, Geraete
 
 
 class UploadFileForm(forms.Form):
@@ -66,6 +66,7 @@ class TeilnehmerErfassenForm(forms.ModelForm):
 
 
 class ErgebnisTeilnehmerSuchen(forms.Form):
+
     startnummer = forms.CharField(widget=forms.TextInput(
         attrs={
             'class': 'form-control',
@@ -75,10 +76,17 @@ class ErgebnisTeilnehmerSuchen(forms.Form):
         required=True
     )
 
+    geraet = forms.ModelChoiceField(queryset=Geraete.objects.all(), label="", widget=forms.Select(
+        attrs={
+            'class': 'form-control'
+        }
+    ))
+
 
 class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
 
     ergebnis_sprung_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -89,6 +97,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_sprung_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -98,6 +107,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_mini_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -107,6 +117,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_mini_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -116,6 +127,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_reck_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -125,6 +137,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_reck_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -134,15 +147,18 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_balken_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_balken_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -152,6 +168,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_barren_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -161,6 +178,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_barren_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -170,6 +188,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_boden_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -179,6 +198,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_boden_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         widget=forms.NumberInput(
@@ -280,3 +300,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
                   'ergebnis_boden_s',
                   'ergebnis_summe',
                   ]
+
+
+class TablesDeleteForm(forms.Form):
+    pass

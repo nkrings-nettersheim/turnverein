@@ -1,13 +1,14 @@
 from django.urls import path
+
 from . import views
-from .views import index, VereineDeleteView, VereineListView
+from .views import index
 
 app_name = 'turnfest'
 
 urlpatterns = [
     path('', index, name='index'),
     path('bezirksturnfest/', views.bezirksturnfest, name='bezirksturnfest'),
-    #path('ligawettkampf/', views.ligawettkampf, name='ligawettkampf'),
+    # path('ligawettkampf/', views.ligawettkampf, name='ligawettkampf'),
     path('impressum/', views.impressum, name='impressum'),
     path('datenschutz/', views.datenschutz, name='datenschutz'),
 
@@ -16,7 +17,7 @@ urlpatterns = [
     path('vereine_detail/<int:pk>/', views.VereineDetailView.as_view(), name='vereine_detail'),
     path('vereine_edit/<int:pk>/', views.VereineUpdateView.as_view(), name='vereine_edit'),
     path('vereine_delete/<int:pk>/', views.VereineDeleteView.as_view(), name='vereine_delete'),
-
+    path('vereine_upload', views.vereine_upload, name='vereine_upload'),
     path('report_vereine/', views.report_vereine, name='report_vereine'),
 
     path('teilnehmer_create/', views.TeilnehmerCreateView.as_view(), name='teilnehmer_create'),
@@ -37,4 +38,7 @@ urlpatterns = [
 
     path('auswertung', views.report_auswertung, name='auswertung'),
     path('urkunden', views.report_urkunden, name='urkunden'),
+
+    path('delete_tables', views.delete_tables_bezirksturnfest, name='delete_tables'),
+
 ]

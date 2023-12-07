@@ -38,7 +38,7 @@ from turnverein.settings import BASE_DIR
 
 from .models import Vereine, Teilnehmer, Wettkampfteilnahme, Geraete, Riegen, BezirksturnfestErgebnisse, Meisterschaften
 from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm, TeilnehmerErfassenForm, \
-    ErgebnisTeilnehmererfassenForm
+    ErgebnisTeilnehmererfassenForm, TablesDeleteForm
 
 
 # assert False
@@ -322,7 +322,7 @@ def report_geraetelisten(request):
 
     # Create a list to store the content for the PDF
     content = []
-    #teilnehmer_alle = []
+    # teilnehmer_alle = []
     for riege in riegen:
         for geraet in geraete:
 
@@ -668,16 +668,17 @@ def report_auswertung(request):
             p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
 
             p.setFillGray(0.0)
-            p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, meisterschaft.meisterschaft +  " " + meisterschaft.meisterschaft_gender)
+            p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm,
+                         meisterschaft.meisterschaft + " " + meisterschaft.meisterschaft_gender)
 
             meister_innen = BezirksturnfestErgebnisse.objects.filter(
                 ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
                 ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(meisterschaft.meisterschaft_bis),
                 ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender).order_by("-ergebnis_summe")
-#            assert False
+            #            assert False
             h = h + 0.5
 
-            i = 0  #zähler
+            i = 0  # zähler
             ergebnis_zwischen = 0  # zwischenspeicherung des vorherigen ergebnisses
             for meister_in in meister_innen:
                 if i > 0:
@@ -698,7 +699,6 @@ def report_auswertung(request):
 
         current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
         p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
-
 
         p.showPage()  # Erzwingt eine neue Seite
 
@@ -779,7 +779,6 @@ def report_urkunden(request):
             h = h + 1
             p.drawCentredString(breite / 2, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer))
 
-
             ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
             rang = rang + 1
             p.showPage()
@@ -789,3 +788,54 @@ def report_urkunden(request):
 
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=False, filename="Urkunden_Bezirksturnfest.pdf")
+
+
+def vereine_upload(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            vereine_handle_uploaded_file(request.FILES['file'])
+            return redirect('/turnfest/vereine_list/')
+    else:
+        form = UploadFileForm()
+    return render(request, 'turnfest/vereine_upload.html', {'form': form})
+
+
+def vereine_handle_uploaded_file(file):
+    # Lese die Daten aus der Excel-Datei
+    df = pd.read_excel(file, na_filter=False)
+
+    # Iteriere durch die Zeilen und speichere die Daten in der Datenbank
+    for index, row in df.iterrows():
+        vereine_neu = Vereine(verein_name=row['verein_name'],
+                              verein_name_kurz=row['verein_name_kurz'],
+                              verein_strasse=row['verein_strasse'],
+                              verein_plz=row['verein_plz'],
+                              verein_ort=row['verein_ort'],
+                              verein_telefon=row['verein_telefon'],
+                              verein_email=row['verein_email']
+                              )
+        try:
+            vereine_neu.save()
+        except:
+            pass
+
+
+##########################################################################
+# Area Löschen Bezirksturnfest
+##########################################################################
+
+
+def delete_tables_bezirksturnfest(request):
+    if request.method == 'POST':
+        count_ergebnisse = BezirksturnfestErgebnisse.objects.all().delete()
+        count_teilnehmer = Teilnehmer.objects.all().delete()
+        #count_vereine = Vereine.objects.all().delete()
+        #UPDATE sqlite_sequence SET seq = (SELECT MAX(col) FROM Tbl) WHERE name="Tbl"
+        #print(count_teilnehmer)
+        return redirect('/turnfest/teilnehmer_list/')
+    else:
+        pass
+
+    form = TablesDeleteForm()
+    return render(request, 'turnfest/tables_delete.html', {'form': form})

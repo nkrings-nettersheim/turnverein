@@ -20,7 +20,6 @@ class ErgebnisTeilnehmerSuchen(forms.Form):
 
 
 class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
-
     ergebnis_sprung_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
@@ -264,3 +263,8 @@ class TeilnehmerErfassenForm(forms.ModelForm):
         self.fields['teilnehmer_balken'].label = 'Meldung Balken:'
         self.fields['teilnehmer_barren'].label = 'Meldung Barren:'
         self.fields['teilnehmer_boden'].label = 'Meldung Boden:'
+
+
+class TablesDeleteForm(forms.Form):
+    pass
+

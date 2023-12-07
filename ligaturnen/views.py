@@ -36,7 +36,7 @@ from turnverein.settings import BASE_DIR
 
 from .models import Vereine, Teilnehmer, Ligen, Geraete, LigaturnenErgebnisse
 from .forms import VereinErfassenForm, LigaErfassenForm, TeilnehmerErfassenForm, UploadFileForm, \
-    ErgebnisTeilnehmererfassenForm, ErgebnisTeilnehmerSuchen
+    ErgebnisTeilnehmererfassenForm, ErgebnisTeilnehmerSuchen, TablesDeleteForm
 
 
 def index(request):
@@ -386,22 +386,31 @@ def report_geraetelisten(request):
 def ergebnis_erfassen_suche(request):
     if request.method == "POST":
         startnummer = request.POST['startnummer']
+        geraete_id = request.POST['geraet']
         teilnehmer = Teilnehmer.objects.get(id=startnummer)
+        geraet = Geraete.objects.get(id=geraete_id)
         if teilnehmer:
             try:
                 ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
-                return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/')
+                return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/?geraet=' + str(geraete_id))
             except:
-                return redirect("/ligaturnen/add/ergebnis" + "/?start=" + startnummer)
+                return redirect("/ligaturnen/add/ergebnis" + "/?start=" + startnummer + "&geraet=" + str(geraete_id))
 
         else:
             form = ErgebnisTeilnehmerSuchen()
             return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
 
     else:
+        geraet_option = request.GET.get('geraet')
+        teilnehmer_id = request.GET.get('teilnehmer')
+        if teilnehmer_id:
+            ergebnis = LigaturnenErgebnisse.objects.get(id=teilnehmer_id)
+        else:
+            ergebnis = ""
         form = ErgebnisTeilnehmerSuchen()
+        form.geraet_option = geraet_option
 
-    return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
+    return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form, 'ergebnis': ergebnis})
 
 
 def ergebnis_erfassen(request):
@@ -432,32 +441,43 @@ class ErgebnisUpdateView(UpdateView):
 def add_ergebnis(request):
     if request.method == "POST":
         form = ErgebnisTeilnehmererfassenForm(request.POST)
-        # assert False
+        #assert False
         if form.is_valid():
             item = form.save(commit=False)
             item.save()
-            return redirect('/ligaturnen/ergebnis_erfassen_suche/')
+            geraet = request.GET.get('geraet')
+            return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + id)
+        else:
+            for field in form:
+                print("Field Error:", field.name, field.errors)
     else:
         startnummer = request.GET.get('start')
+        geraete_id = request.GET.get('geraet')
         teilnehmer = Teilnehmer.objects.get(id=startnummer)
 
         form = ErgebnisTeilnehmererfassenForm()
         form.turnerin = teilnehmer.teilnehmer_name + " " + teilnehmer.teilnehmer_vorname
         form.teilnehmer_id = teilnehmer.id
+        form.geraet = geraete_id
+        form.add = True       # Damit im Formular die hidden Felder eingeblendet werden
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
 
 
 def edit_ergebnis(request, id=None):
     item = get_object_or_404(LigaturnenErgebnisse, id=id)
     form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
-    # assert False
+
     if form.is_valid():
         form.save()
-        return redirect('/ligaturnen/ergebnis_erfassen_suche/')
+        geraet = request.GET.get('geraet')
+        #assert False
+        return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + id)
 
     form.id = item.id
     form.turnerin = item.ergebnis_teilnehmer
     form.teilnehmer_id = item.ergebnis_teilnehmer.id
+    form.geraet = request.GET.get('geraet')
+    #assert False
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
 
 
@@ -670,3 +690,56 @@ def report_auswertung_einzel(request):
     # present the option to save the file.
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=False, filename="Ergebnislisten_Ligaturnen_Einzel.pdf")
+
+
+##########################################################################
+# Area Verein Upload
+##########################################################################
+
+def vereine_upload(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            vereine_handle_uploaded_file(request.FILES['file'])
+            return redirect('/ligaturnen/vereine_list/')
+    else:
+        form = UploadFileForm()
+    return render(request, 'ligaturnen/vereine_upload.html', {'form': form})
+
+
+def vereine_handle_uploaded_file(file):
+    # Lese die Daten aus der Excel-Datei
+    df = pd.read_excel(file, na_filter=False)
+
+    # Iteriere durch die Zeilen und speichere die Daten in der Datenbank
+    for index, row in df.iterrows():
+        vereine_neu = Vereine(verein_name=row['verein_name'],
+                              verein_name_kurz=row['verein_name_kurz'],
+                              verein_strasse=row['verein_strasse'],
+                              verein_plz=row['verein_plz'],
+                              verein_ort=row['verein_ort'],
+                              verein_telefon=row['verein_telefon'],
+                              verein_email=row['verein_email']
+                              )
+        try:
+            vereine_neu.save()
+        except:
+            pass
+
+##########################################################################
+# Area Löschen Tabellen Ligaturnen Ergebnisse und Teilnehmer
+##########################################################################
+
+
+def delete_tables_ligaturnen(request):
+    if request.method == 'POST':
+        count_ergebnisse = LigaturnenErgebnisse.objects.all().delete()
+        count_teilnehmer = Teilnehmer.objects.all().delete()
+        #count_vereine = Vereine.objects.all().delete()
+        #UPDATE sqlite_sequence SET seq = (SELECT MAX(col) FROM Tbl) WHERE name="Tbl"
+        return redirect('/ligaturnen/teilnehmer_list/')
+    else:
+        pass
+
+    form = TablesDeleteForm()
+    return render(request, 'ligaturnen/tables_delete.html', {'form': form})

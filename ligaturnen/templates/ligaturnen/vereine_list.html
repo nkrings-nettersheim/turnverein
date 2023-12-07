@@ -19,8 +19,9 @@
     <table class="table table-hover">
         <thead>
           <tr>
+              <th class="col-sm-1">Vereins-ID</th>
               <th class="col-sm-2">Vereins-Name</th>
-              <th class="col-sm-2">Vereins-Kürzel</th>
+              <th class="col-sm-1">Vereins-Kürzel</th>
               <th class="col-sm-2">Strasse</th>
               <th class="col-sm-1">PLZ</th>
               <th class="col-sm-2">Ort</th>
@@ -32,6 +33,7 @@
         <tbody>
             {% for vereine in object_list %}
             <tr>
+                <td>{{ vereine.id }}</td>
                 <td>{{ vereine.verein_name }}</td>
                 <td>{{ vereine.verein_name_kurz|default_if_none:"" }}</td>
                 <td>{{ vereine.verein_strasse|default_if_none:"" }}</td>
