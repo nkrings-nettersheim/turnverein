@@ -19,12 +19,24 @@
             </div>
             <div class="col-sm-2"></div>
     </div>
+     <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4"></div>
+            <div class="col-sm-2">
+                {% if request.session.count_positiv %}
+                Neue Datensätze: {{ request.session.count_positiv }} <br>doppelte Datensätze: {{request.session.count_negativ}}
+                {% endif %}
+            </div>
+            <div class="col-sm-2"></div>
+    </div>
     <p></p>
 
     <table class="table table-hover">
     <thead>
       <tr>
           <th class="col-sm-1 text-center">Startnr.</th>
+          <th class="col-sm-1 text-center">Liga Tag</th>
           <th class="col-sm-1">Name</th>
           <th class="col-sm-1">Vorname</th>
           <th class="col-sm-1 text-center">Geburtsjahr</th>
@@ -41,6 +53,7 @@
         {% for teilnehmer in object_list %}
         <tr>
             <td class="text-center">{{ teilnehmer.id }}</td>
+            <td class="text-center">{{ teilnehmer.teilnehmer_liga_tag }}</td>
             <td>{{ teilnehmer.teilnehmer_name }}</td>
             <td>{{ teilnehmer.teilnehmer_vorname }}</td>
             <td class="text-center">{{ teilnehmer.teilnehmer_geburtsjahr|date:"Y" }}</td>

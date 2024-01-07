@@ -163,3 +163,4 @@ Thumbs.db #thumbnail cache on Windows
 .idea/
 /generate_days.py
 /.coveragerc
+/ligaturnen/migrations/

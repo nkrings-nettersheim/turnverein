@@ -80,12 +80,14 @@ class Teilnehmer(models.Model):
             models.UniqueConstraint(fields=['teilnehmer_name',
                                             'teilnehmer_vorname',
                                             'teilnehmer_geburtsjahr',
-                                            'teilnehmer_verein'], name='unique liga_name_vorname_geburtsjahr_verein'),
+                                            'teilnehmer_verein',
+                                            'teilnehmer_liga_tag'], name='unique liga_name_vorname_geburtsjahr_verein'),
         ]
 
 
 class LigaturnenErgebnisse(models.Model):
     ergebnis_teilnehmer = models.ForeignKey(Teilnehmer, on_delete=models.PROTECT, null=True)
+    ergebnis_ligatag = models.CharField(max_length=1, default=1, null=True)
     ergebnis_sprung_a = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_sprung_b = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_sprung_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
@@ -121,3 +123,68 @@ class LigaturnenErgebnisse(models.Model):
                               self.ergebnis_balken_s + self.ergebnis_barren_s + self.ergebnis_boden_s
 
         super(LigaturnenErgebnisse, self).save(*args, **kwargs)
+
+
+class LigaturnenErgebnisseZwischenLiga(models.Model):
+    GENDER = (
+        ('w', 'weiblich'),
+        ('m', 'männlich'),
+    )
+    liga = models.ForeignKey(Ligen, on_delete=models.PROTECT, null=True)
+    verein = models.ForeignKey(Vereine, on_delete=models.PROTECT, null=True)
+    mannschaft = models.IntegerField(null=True, default=1, blank=True)
+    gender = models.CharField(max_length=1, choices=GENDER, default='w')
+    ergebnis_sprung_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_mini_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_reck_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_balken_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_barren_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_boden_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return str(self.liga) + " " + str(self.verein) + " " + str(self.mannschaft)
+
+    def save(self, *args, **kwargs):
+        self.ergebnis_summe = self.ergebnis_sprung_s + self.ergebnis_mini_s + self.ergebnis_reck_s + \
+                              self.ergebnis_balken_s + self.ergebnis_barren_s + self.ergebnis_boden_s
+
+        super(LigaturnenErgebnisseZwischenLiga, self).save(*args, **kwargs)
+
+
+class LigaturnenErgebnisseZwischenEinzel(models.Model):
+
+    GENDER = (
+        ('w', 'weiblich'),
+        ('m', 'männlich'),
+    )
+
+    teilnehmer_name = models.CharField(max_length=30, blank=True, default='', null=True)
+    teilnehmer_vorname = models.CharField(max_length=30, blank=True, default='', null=True)
+    teilnehmer_geburtsjahr = models.DateField(default='1900-01-01')
+    teilnehmer_gender = models.CharField(max_length=1, choices=GENDER, default='w')
+    teilnehmer_verein = models.ForeignKey(Vereine, on_delete=models.PROTECT, null=True)
+    ergebnis_sprung_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_mini_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_reck_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_balken_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_barren_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_boden_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return str(self.teilnehmer_name) + " " + str(self.teilnehmer_vorname)
+
+    def save(self, *args, **kwargs):
+        self.ergebnis_summe = self.ergebnis_sprung_s + self.ergebnis_mini_s + self.ergebnis_reck_s + \
+                              self.ergebnis_balken_s + self.ergebnis_barren_s + self.ergebnis_boden_s
+
+        super(LigaturnenErgebnisseZwischenEinzel, self).save(*args, **kwargs)
+
+
+class LigaTag(models.Model):
+    ligatag = models.IntegerField(default=1, blank=True)
+
+    def __str__(self):
+        return str(self.ligatag)
+

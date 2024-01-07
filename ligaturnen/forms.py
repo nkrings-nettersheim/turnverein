@@ -280,6 +280,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     class Meta:
         model = LigaturnenErgebnisse
         fields = ['ergebnis_teilnehmer',
+                  'ergebnis_ligatag',
                   'ergebnis_sprung_a',
                   'ergebnis_sprung_b',
                   'ergebnis_mini_a',

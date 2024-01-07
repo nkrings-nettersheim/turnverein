@@ -43,6 +43,9 @@ urlpatterns = [
 
     path('auswertungeinzel', views.report_auswertung_einzel, name='auswertungeinzel'),
     path('auswertungmannschaft', views.report_auswertung_mannschaft, name='auswertungmannschaft'),
+    path('auswertungvereine', views.report_auswertung_vereine, name='auswertungvereine'),
 
     path('delete_tables', views.delete_tables_ligaturnen, name='delete_tables'),
+
+    path('ligatag_edit/<int:pk>/', views.LigaTagUpdateView.as_view(), name='ligatag_edit'),
 ]

@@ -25,6 +25,7 @@
         {{ form.non_field_errors }}
         <input type="hidden" name="ergebnis_teilnehmer" value="{{ form.teilnehmer_id }}">
         <input type="hidden" name="geraet" value="{{ form.geraet }}">
+        <input type="hidden" name="ergebnis_ligatag" value="{{ form.ligatag }}">
 
         {% if form.add %}
             <input type="hidden" name="ergebnis_sprung_a" value="0">
