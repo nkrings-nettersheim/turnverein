@@ -22,5 +22,6 @@ urlpatterns = [
     path('', RedirectView.as_view(url='turnfest/', permanent=True)),
     path('turnfest/', include('turnfest.urls')),
     path('ligaturnen/', include('ligaturnen.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
     path('admin/', admin.site.urls),
 ]

@@ -1,6 +1,7 @@
 import pandas as pd
 import io
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from datetime import datetime, timezone
 
@@ -15,6 +16,7 @@ from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.http import FileResponse
+from django.contrib.auth.decorators import login_required
 
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 
@@ -39,19 +41,19 @@ from .models import Vereine, Teilnehmer, Ligen, Geraete, LigaturnenErgebnisse, L
 from .forms import VereinErfassenForm, LigaErfassenForm, TeilnehmerErfassenForm, UploadFileForm, \
     ErgebnisTeilnehmererfassenForm, ErgebnisTeilnehmerSuchen, TablesDeleteForm
 
-
+@login_required
 def index(request):
     return render(request, 'ligaturnen/index.html')
 
-
+@login_required
 def impressum(request):
     return render(request, 'ligaturnen/impressum.html')
 
-
+@login_required
 def datenschutz(request):
     return render(request, 'ligaturnen/datenschutz.html')
 
-
+@login_required
 def ligawettkampf(request):
     teilnehmer_1 = Teilnehmer.objects.filter(teilnehmer_liga_tag="1").count()
     teilnehmer_2 = Teilnehmer.objects.filter(teilnehmer_liga_tag="2").count()
@@ -68,34 +70,34 @@ def ligawettkampf(request):
 ##########################################################################
 # Area Verein create and change
 ##########################################################################
-class VereineCreateView(CreateView):
+class VereineCreateView(LoginRequiredMixin, CreateView):
     model = Vereine
     template_name = "ligaturnen/vereine_create.html"
     form_class = VereinErfassenForm
     success_url = reverse_lazy("ligaturnen:vereine_list")
 
 
-class VereineListView(ListView):
+class VereineListView(LoginRequiredMixin, ListView):
     model = Vereine
 
 
-class VereineDetailView(DetailView):
+class VereineDetailView(LoginRequiredMixin, DetailView):
     model = Vereine
 
 
-class VereineUpdateView(UpdateView):
+class VereineUpdateView(LoginRequiredMixin, UpdateView):
     model = Vereine
     template_name = "ligaturnen/vereine_update.html"
     fields = '__all__'
     success_url = "/ligaturnen/vereine_list/"
 
 
-class VereineDeleteView(DeleteView):
+class VereineDeleteView(LoginRequiredMixin, DeleteView):
     model = Vereine
     template_name = "ligaturnen/vereine_delete.html"
     success_url = reverse_lazy("ligaturnen:vereine_list")
 
-
+@login_required
 def report_vereine(request):
     vereine = Vereine.objects.all()
 
@@ -118,29 +120,29 @@ def report_vereine(request):
 ##########################################################################
 # Area Ligen create and change
 ##########################################################################
-class LigenCreateView(CreateView):
+class LigenCreateView(LoginRequiredMixin, CreateView):
     model = Ligen
     template_name = "ligaturnen/ligen_create.html"
     form_class = LigaErfassenForm
     success_url = reverse_lazy("ligaturnen:ligen_list")
 
 
-class LigenListView(ListView):
+class LigenListView(LoginRequiredMixin, ListView):
     model = Ligen
 
 
-class LigenDetailView(DetailView):
+class LigenDetailView(LoginRequiredMixin, DetailView):
     model = Ligen
 
 
-class LigenUpdateView(UpdateView):
+class LigenUpdateView(LoginRequiredMixin, UpdateView):
     model = LigaTag
     template_name = "ligaturnen/ligen_update.html"
     fields = '__all__'
     success_url = "/ligaturnen/ligen_list/"
 
 
-class LigenDeleteView(DeleteView):
+class LigenDeleteView(LoginRequiredMixin, DeleteView):
     model = Ligen
     template_name = "ligaturnen/ligen_delete.html"
     success_url = reverse_lazy("ligaturnen:ligen_list")
@@ -149,7 +151,7 @@ class LigenDeleteView(DeleteView):
 ##########################################################################
 # Area Teilnehmer create and change
 ##########################################################################
-class TeilnehmerCreateView(CreateView):
+class TeilnehmerCreateView(LoginRequiredMixin, CreateView):
     model = Teilnehmer
     template_name = "ligaturnen/teilnehmer_create.html"
     form_class = TeilnehmerErfassenForm
@@ -157,7 +159,7 @@ class TeilnehmerCreateView(CreateView):
     success_url = reverse_lazy("ligaturnen:teilnehmer_list")
 
 
-class TeilnehmerList(ListView):
+class TeilnehmerList(LoginRequiredMixin, ListView):
     model = Teilnehmer
     ordering = ['teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_name']
 
@@ -170,11 +172,11 @@ class TeilnehmerList(ListView):
     #    print("Hallo" + str(count_negativ))
     #    return count_negativ
 
-class TeilnehmerDetailView(DetailView):
+class TeilnehmerDetailView(LoginRequiredMixin, DetailView):
     model = Teilnehmer
 
 
-class TeilnehmerUpdateView(UpdateView):
+class TeilnehmerUpdateView(LoginRequiredMixin, UpdateView):
     model = Teilnehmer
     template_name = "ligaturnen/teilnehmer_update.html"
     # fields = '__all__'
@@ -182,19 +184,19 @@ class TeilnehmerUpdateView(UpdateView):
     success_url = reverse_lazy("ligaturnen:teilnehmer_list")
 
 
-class TeilnehmerDeleteView(DeleteView):
+class TeilnehmerDeleteView(LoginRequiredMixin, DeleteView):
     model = Teilnehmer
     template_name = "ligaturnen/teilnehmer_delete.html"
     success_url = reverse_lazy("ligaturnen:teilnehmer_list")
 
 
-class LigaTagUpdateView(UpdateView):
+class LigaTagUpdateView(LoginRequiredMixin, UpdateView):
     model = LigaTag
     template_name = "ligaturnen/ligatag_update.html"
     fields = '__all__'
     success_url = "/ligaturnen/ligawettkampf/"
 
-
+@login_required
 def teilnehmer_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -207,7 +209,7 @@ def teilnehmer_upload(request):
         form = UploadFileForm()
     return render(request, 'ligaturnen/teilnehmer_upload.html', {'form': form})
 
-
+@login_required
 def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file)
@@ -246,7 +248,7 @@ def handle_uploaded_file(file):
 ##########################################################################
 # Area Download verschiedene Dokumente
 ##########################################################################
-
+@login_required
 def download_document(request):
     if request.method == 'GET':
         file_name = request.GET.get('file_name')
@@ -260,7 +262,7 @@ def download_document(request):
 ##########################################################################
 # Area Geräteliste erzeugen
 ##########################################################################
-
+@login_required
 def report_geraetelisten(request):
     ligen = Ligen.objects.all()
     geraete = Geraete.objects.all()
@@ -418,7 +420,7 @@ def report_geraetelisten(request):
 ##########################################################################
 # Area Ergebnisse erfassen
 ##########################################################################
-
+@login_required
 def ergebnis_erfassen_suche(request):
     if request.method == "POST":
         startnummer = request.POST['startnummer']
@@ -460,21 +462,20 @@ def ergebnis_erfassen(request):
     return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
 
 
-class ErgebnisCreateView(CreateView):
+class ErgebnisCreateView(LoginRequiredMixin, CreateView):
     model = LigaturnenErgebnisse
     template_name = "ligaturnen/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
     # fields = '__all__'
     success_url = reverse_lazy("ligaturnen:ergebnis_erfassen_suche")
 
-
-class ErgebnisUpdateView(UpdateView):
+class ErgebnisUpdateView(LoginRequiredMixin, UpdateView):
     model = LigaturnenErgebnisse
     template_name = "ligaturnen/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
     success_url = reverse_lazy("ligaturnen:ergebnis_erfassen_suche")
 
-
+@login_required
 def add_ergebnis(request):
     if request.method == "POST":
         form = ErgebnisTeilnehmererfassenForm(request.POST)
@@ -501,7 +502,7 @@ def add_ergebnis(request):
         form.add = True  # Damit im Formular die hidden Felder eingeblendet werden
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
 
-
+@login_required
 def edit_ergebnis(request, id=None):
     item = get_object_or_404(LigaturnenErgebnisse, id=id)
     form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
@@ -525,7 +526,7 @@ def edit_ergebnis(request, id=None):
 ##########################################################################
 # Area Auswertung Ligaturnen Mannschaften
 ##########################################################################
-
+@login_required
 def report_auswertung_mannschaft(request):
     ligen = Ligen.objects.all()
     vereine = Vereine.objects.all()
@@ -744,7 +745,7 @@ def report_auswertung_mannschaft(request):
 ##########################################################################
 # Area Auswertung Ligaturnen Einzelturnerinnen
 ##########################################################################
-
+@login_required
 def report_auswertung_einzel(request):
     ligen = Ligen.objects.all()
 
@@ -990,6 +991,7 @@ def report_auswertung_einzel(request):
 ##########################################################################
 # Area Auswertung Vereine
 ##########################################################################
+@login_required
 def report_auswertung_vereine(request):
     vereine = Vereine.objects.all()
 
@@ -1076,7 +1078,7 @@ def report_auswertung_vereine(request):
 ##########################################################################
 # Area Verein Upload
 ##########################################################################
-
+@login_required
 def vereine_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -1087,7 +1089,7 @@ def vereine_upload(request):
         form = UploadFileForm()
     return render(request, 'ligaturnen/vereine_upload.html', {'form': form})
 
-
+@login_required
 def vereine_handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file, na_filter=False)
@@ -1112,7 +1114,7 @@ def vereine_handle_uploaded_file(file):
 # Area Löschen Tabellen Ligaturnen Ergebnisse und Teilnehmer
 ##########################################################################
 
-
+@login_required
 def delete_tables_ligaturnen(request):
     if request.method == 'POST':
         count_ergebnisse = LigaturnenErgebnisse.objects.all().delete()

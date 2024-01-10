@@ -1,0 +1,29 @@
+{% extends "base_login.html" %}
+
+
+{% block extrahead %}
+    {% load crispy_forms_tags %}
+    {% load static %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <p></p>
+    <p></p>
+      <div class="row">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-4">
+        {% if form.errors %}
+          <p>Die eingegebenen Daten konnten nicht gefunden werden. Bitte überprüfen Sie Ihre Eingaben.</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+              {{ form|crispy }}
+          <button class="btn btn-secondary" type="submit">Log In</button>
+        </form>
+        </div>
+        <div class="col-sm-4"></div>
+      </div>
+</div>
+{% endblock %}
