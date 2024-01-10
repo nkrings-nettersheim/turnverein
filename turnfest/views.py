@@ -6,6 +6,8 @@ import pandas as pd
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, DateField, DateTimeField
 from django.db.models.functions import Cast, TruncDate
 from django.shortcuts import render, redirect, get_object_or_404
@@ -46,14 +48,15 @@ from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm,
 ##########################################################################
 # Area allgemeine Seiten
 ##########################################################################
+@login_required
 def index(request):
     return render(request, 'turnfest/index.html')
 
-
+@login_required
 def bezirksturnfest(request):
     return render(request, 'turnfest/bezirksturnfest.html')
 
-
+@login_required
 def ligawettkampf(request):
     return render(request, 'turnfest/ligawettkampf.html')
 
@@ -69,34 +72,34 @@ def datenschutz(request):
 ##########################################################################
 # Area Verein create and change
 ##########################################################################
-class VereineCreateView(CreateView):
+class VereineCreateView(LoginRequiredMixin, CreateView):
     model = Vereine
     template_name = "turnfest/vereine_create.html"
     form_class = VereinErfassenForm
     success_url = reverse_lazy("turnfest:vereine_list")
 
 
-class VereineListView(ListView):
+class VereineListView(LoginRequiredMixin, ListView):
     model = Vereine
 
 
-class VereineDetailView(DetailView):
+class VereineDetailView(LoginRequiredMixin, DetailView):
     model = Vereine
 
 
-class VereineUpdateView(UpdateView):
+class VereineUpdateView(LoginRequiredMixin, UpdateView):
     model = Vereine
     template_name = "turnfest/vereine_update.html"
     fields = '__all__'
     success_url = "/turnfest/vereine_list/"
 
 
-class VereineDeleteView(DeleteView):
+class VereineDeleteView(LoginRequiredMixin, DeleteView):
     model = Vereine
     template_name = "turnfest/vereine_delete.html"
     success_url = reverse_lazy("turnfest:vereine_list")
 
-
+@login_required
 def report_vereine(request):
     vereine = Vereine.objects.all()
 
@@ -119,7 +122,7 @@ def report_vereine(request):
 ##########################################################################
 # Area Teilnehmer create and change
 ##########################################################################
-class TeilnehmerCreateView(CreateView):
+class TeilnehmerCreateView(LoginRequiredMixin, CreateView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_create.html"
     form_class = TeilnehmerErfassenForm
@@ -127,17 +130,17 @@ class TeilnehmerCreateView(CreateView):
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
-class TeilnehmerList(ListView):
+class TeilnehmerList(LoginRequiredMixin, ListView):
     model = Teilnehmer
 
     ordering = ['teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_name']
 
 
-class TeilnehmerDetailView(DetailView):
+class TeilnehmerDetailView(LoginRequiredMixin, DetailView):
     model = Teilnehmer
 
 
-class TeilnehmerUpdateView(UpdateView):
+class TeilnehmerUpdateView(LoginRequiredMixin, UpdateView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_update.html"
     # fields = '__all__'
@@ -145,7 +148,7 @@ class TeilnehmerUpdateView(UpdateView):
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
-class TeilnehmerDeleteView(DeleteView):
+class TeilnehmerDeleteView(LoginRequiredMixin, DeleteView):
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_delete.html"
     success_url = reverse_lazy("turnfest:teilnehmer_list")
@@ -154,22 +157,22 @@ class TeilnehmerDeleteView(DeleteView):
 ##########################################################################
 # Area Wettkampfteilnehmer create and change
 ##########################################################################
-class WettkampfteilnahmeCreateView(CreateView):
+class WettkampfteilnahmeCreateView(LoginRequiredMixin, CreateView):
     model = Wettkampfteilnahme
     template_name = "turnfest/wettkampfteilnahme_create.html"
     fields = '__all__'
     success_url = "/"
 
 
-class WettkampfteilnahmeList(ListView):
+class WettkampfteilnahmeList(LoginRequiredMixin, ListView):
     model = Wettkampfteilnahme
 
 
-class WettkampfteilnahmeDetailView(DetailView):
+class WettkampfteilnahmeDetailView(LoginRequiredMixin, DetailView):
     model = Wettkampfteilnahme
 
 
-class WettkampfteilnahmeUpdateView(UpdateView):
+class WettkampfteilnahmeUpdateView(LoginRequiredMixin, UpdateView):
     model = Wettkampfteilnahme
     template_name = "turnfest/wettkampfteilnahme_update.html"
     fields = '__all__'
@@ -179,7 +182,7 @@ class WettkampfteilnahmeUpdateView(UpdateView):
 ##########################################################################
 # Area Wettkampflisten erzeugen
 ##########################################################################
-
+@login_required
 def report_geraetelisten_old(request):
     riegen = Riegen.objects.all()
     geraete = Geraete.objects.all()
@@ -278,7 +281,7 @@ def report_geraetelisten_old(request):
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="Wettkampfliste.pdf")
 
-
+@login_required
 def report_geraetelisten(request):
     riegen = Riegen.objects.all()
     geraete = Geraete.objects.all()
@@ -429,7 +432,7 @@ def report_geraetelisten(request):
 
     return response
 
-
+@login_required
 def teilnehmer_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -440,7 +443,7 @@ def teilnehmer_upload(request):
         form = UploadFileForm()
     return render(request, 'turnfest/teilnehmer_upload.html', {'form': form})
 
-
+@login_required
 def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file)
@@ -469,7 +472,7 @@ def handle_uploaded_file(file):
 ##########################################################################
 # Area Ergebnisse erfassen
 ##########################################################################
-
+@login_required
 def ergebnis_erfassen_suche(request):
     if request.method == "POST":
         startnummer = request.POST['startnummer']
@@ -492,7 +495,7 @@ def ergebnis_erfassen_suche(request):
 
     return render(request, 'turnfest/ergebnis_erfassen_suche.html', {'form': form})
 
-
+@login_required
 def ergebnis_erfassen(request):
     if request.method == "POST":
         pass
@@ -503,21 +506,20 @@ def ergebnis_erfassen(request):
     return render(request, 'turnfest/ergebnis_erfassen_suche.html', {'form': form})
 
 
-class ErgebnisCreateView(CreateView):
+class ErgebnisCreateView(LoginRequiredMixin, CreateView):
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
     # fields = '__all__'
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
 
-
-class ErgebnisUpdateView(UpdateView):
+class ErgebnisUpdateView(LoginRequiredMixin, UpdateView):
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
 
-
+@login_required
 def add_ergebnis(request):
     if request.method == "POST":
         form = ErgebnisTeilnehmererfassenForm(request.POST)
@@ -535,7 +537,7 @@ def add_ergebnis(request):
         form.teilnehmer_id = teilnehmer.id
     return render(request, 'turnfest/ergebnis_erfassen.html', {'form': form})
 
-
+@login_required
 def edit_ergebnis(request, id=None):
     item = get_object_or_404(BezirksturnfestErgebnisse, id=id)
     form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
@@ -553,7 +555,7 @@ def edit_ergebnis(request, id=None):
 ##########################################################################
 # Area Auswertung Bezirksturnfest erfassen
 ##########################################################################
-
+@login_required
 def report_auswertung(request):
     meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
 
@@ -710,7 +712,7 @@ def report_auswertung(request):
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="Ergebnislisten.pdf")
 
-
+@login_required
 def report_urkunden(request):
     meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
 
@@ -789,7 +791,7 @@ def report_urkunden(request):
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=False, filename="Urkunden_Bezirksturnfest.pdf")
 
-
+@login_required
 def vereine_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -800,7 +802,7 @@ def vereine_upload(request):
         form = UploadFileForm()
     return render(request, 'turnfest/vereine_upload.html', {'form': form})
 
-
+@login_required
 def vereine_handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file, na_filter=False)
@@ -825,7 +827,7 @@ def vereine_handle_uploaded_file(file):
 # Area Löschen Bezirksturnfest
 ##########################################################################
 
-
+@login_required
 def delete_tables_bezirksturnfest(request):
     if request.method == 'POST':
         count_ergebnisse = BezirksturnfestErgebnisse.objects.all().delete()

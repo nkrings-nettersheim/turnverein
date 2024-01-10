@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'lager/base.css' %}">
+{% endblock %}
+
+{% block content %}
+<content>
+    <p>Auf Wiedersehen!</p>
+    <p></p>
+    <p><a href="{% url 'login' %}">Zur Login-Seite</a></p>
+</content>
+
+{% endblock %}

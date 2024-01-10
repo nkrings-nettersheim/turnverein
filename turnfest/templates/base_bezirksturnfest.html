@@ -13,15 +13,19 @@
 
 <body>
 
-    {% include "header.html" %}
+    {% if user.is_authenticated %}
+        {% include "header.html" %}
 
-    {% include "nav_bezirksturnfest.html" %}
-    {% block content %}{% endblock %}
+        {% include "nav_bezirksturnfest.html" %}
+        {% block content %}{% endblock %}
 
-    {% include "footer.html" %}
+        {% include "footer.html" %}
 
-    {% bootstrap_javascript %}
-    <script src="{% static 'js/base.js' %}"></script>
-
+        {% bootstrap_javascript %}
+        <script src="{% static 'js/base.js' %}"></script>
+    {% else %}
+    <p>Du bist nicht eingeloggt!</p>
+    <a href="{% url 'login' %}">Log In</a>
+    {% endif %}
 </body>
 </html>
