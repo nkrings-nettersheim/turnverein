@@ -35,14 +35,16 @@ urlpatterns = [
     path('geraetelisten', views.report_geraetelisten, name='geraetelisten'),
 
     path('ergebnis_erfassen_suche/', views.ergebnis_erfassen_suche, name='ergebnis_erfassen_suche'),
-    path('ergebnis_erfassen/', views.ergebnis_erfassen, name='ergebnis_erfassen'),
-    path('ergebnis_create/', views.ErgebnisCreateView.as_view(), name='ergebnis_create'),
-    path('ergebnis_edit/<int:pk>/', views.ErgebnisUpdateView.as_view(), name='ergebnis_edit'),
+    #path('ergebnis_erfassen/', views.ergebnis_erfassen, name='ergebnis_erfassen'),
+    #path('ergebnis_create/', views.ErgebnisCreateView.as_view(), name='ergebnis_create'),
+    #path('ergebnis_edit/<int:pk>/', views.ErgebnisUpdateView.as_view(), name='ergebnis_edit'),
     path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
 
     path('auswertungeinzel', views.report_auswertung_einzel, name='auswertungeinzel'),
+    path('urkundeeinzel', views.report_urkunde_einzel, name='urkundeeinzel'),
     path('auswertungmannschaft', views.report_auswertung_mannschaft, name='auswertungmannschaft'),
+    path('urkundemannschaft', views.report_urkunde_mannschaft, name='urkundemannschaft'),
     path('auswertungvereine', views.report_auswertung_vereine, name='auswertungvereine'),
 
     path('delete_tables', views.delete_tables_ligaturnen, name='delete_tables'),

@@ -74,8 +74,10 @@
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
-              const inputField = document.getElementById('id_ergebnis_sprung_a');
-
+              var inputField = document.getElementById('id_ergebnis_sprung_a');
+              if (inputField.value == 0.00) {
+                  inputField.value = {{ form.sprung }}
+              }
               // Markiere den Initialwert des Eingabefelds
               inputField.select();
             });
@@ -107,8 +109,10 @@
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
-              const inputField = document.getElementById('id_ergebnis_mini_a');
-
+              var inputField = document.getElementById('id_ergebnis_mini_a');
+              if (inputField.value == 0.00) {
+                  inputField.value = {{ form.mini }}
+              }
               // Markiere den Initialwert des Eingabefelds
               inputField.select();
             });
@@ -140,8 +144,10 @@
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
-              const inputField = document.getElementById('id_ergebnis_reck_a');
-
+              var inputField = document.getElementById('id_ergebnis_reck_a');
+              if (inputField.value == 0.00) {
+                  inputField.value = {{ form.reck }}
+              }
               // Markiere den Initialwert des Eingabefelds
               inputField.select();
             });
@@ -172,8 +178,10 @@
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
-              const inputField = document.getElementById('id_ergebnis_balken_a');
-
+              var inputField = document.getElementById('id_ergebnis_balken_a');
+              if (inputField.value == 0.00) {
+                  inputField.value = {{ form.balken }}
+              }
               // Markiere den Initialwert des Eingabefelds
               inputField.select();
             });
@@ -205,8 +213,10 @@
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
-              const inputField = document.getElementById('id_ergebnis_barren_a');
-
+              var inputField = document.getElementById('id_ergebnis_barren_a');
+              if (inputField.value == 0.00) {
+                  inputField.value = {{ form.barren }}
+              }
               // Markiere den Initialwert des Eingabefelds
               inputField.select();
             });
@@ -237,8 +247,10 @@
           <script>
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
-              const inputField = document.getElementById('id_ergebnis_boden_a');
-
+              var inputField = document.getElementById('id_ergebnis_boden_a');
+              if (inputField.value == 0.00) {
+                  inputField.value = {{ form.boden }}
+              }
               // Markiere den Initialwert des Eingabefelds
               inputField.select();
             });
