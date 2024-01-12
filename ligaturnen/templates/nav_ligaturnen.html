@@ -1,19 +1,26 @@
 <nav class="navbar navbar-expand-sm navbar-dark bg-secondary">
 <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
     <!-- Links -->
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'ligaturnen:index'%}">Startseite</a>
+        <a class="nav-link" href="{% url 'ligaturnen:index'%}">Start</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'ligaturnen:ligawettkampf'%}">Ligaturnen</a>
       </li>
+    {% if perms.ligaturnen.add_teilnehmer %}
       <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Vor dem Wettkampf</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:teilnehmer_list'%}">Teilnehmer</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:teilnehmer_list'%}">Teilnehmer managen</a></li>
           </ul>
       </li>
+    {% endif %}
+    {% if perms.ligaturnen.change_ligatag %}
       <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">kurz vorm Start</a>
           <ul class="dropdown-menu">
@@ -21,28 +28,37 @@
             <li><a class="dropdown-item" href="{% url 'ligaturnen:geraetelisten'%}">Gerätelisten</a></li>
           </ul>
       </li>
-
+    {% endif %}
+    {% if perms.ligaturnen.add_ligaturnenergebnisse %}
       <li class="nav-item">
         <a class="nav-link" href="{% url 'ligaturnen:ergebnis_erfassen_suche'%}">Ergebnisse erfassen</a>
       </li>
+    {% endif %}
+    {% if perms.ligaturnen.add_ligaturnenergebnissezwischenliga %}
       <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Wettkampfende</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'ligaturnen:auswertungeinzel'%}">Auswertung Einzel</a></li>
             <li><a class="dropdown-item" href="{% url 'ligaturnen:auswertungmannschaft'%}">Auswertung Mannschaft</a></li>
             <li><a class="dropdown-item" href="{% url 'ligaturnen:auswertungvereine'%}">Auswertung Vereine</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:urkundeeinzel'%}">Urkunde Einzel</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:urkundemannschaft'%}">Urkunde Mannschaft</a></li>
           </ul>
       </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Referenzlisten</a>
-          <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_list'%}">Vereine</a></li>
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_upload'%}">Vereine upload</a></li>
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:teilnehmer_upload'%}">Teilnehmer upload</a></li>
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:ligen_list'%}">Ligen</a></li>
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:delete_tables'%}">Tabellen löschen</a></li>
-          </ul>
-      </li>
+    {% endif %}
+    {% if perms.ligaturnen.add_vereine %}
+          <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Referenzlisten</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_list'%}">Vereine</a></li>
+                <li><a class="dropdown-item" href="{% url 'ligaturnen:vereine_upload'%}">Vereine upload</a></li>
+                <li><a class="dropdown-item" href="{% url 'ligaturnen:teilnehmer_upload'%}">Teilnehmer upload</a></li>
+                <li><a class="dropdown-item" href="{% url 'ligaturnen:ligen_list'%}">Ligen</a></li>
+                <li><a class="dropdown-item" href="{% url 'ligaturnen:delete_tables'%}">Tabellen löschen</a></li>
+              </ul>
+          </li>
+    {% endif %}
     </ul>
+    </div>
   </div>
 </nav>
