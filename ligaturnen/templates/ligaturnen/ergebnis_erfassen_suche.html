@@ -17,7 +17,15 @@
             <div class="col-sm-2"></div>
             <div class="col-sm-2"></div>
     </div>
-    <p></p>
+    {% if form.startnummerfalse == True %}
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-6"><p class="text-center text-danger">Die eingegebene Startnummer wurde für diesen Ligatag nicht gefunden</p></div>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2"></div>
+    </div>
+    {% endif %}<p></p>
 
     <form action="{% url 'ligaturnen:ergebnis_erfassen_suche' %}" method="post">
         {% csrf_token %}
@@ -65,6 +73,12 @@
 
     <div class="row">
         <div class="col"></div>
+        <div class="col-4 text-end">Startnr.:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_teilnehmer.id }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
         <div class="col-4 text-end">Turner/in:</div>
         <div class="col-4">{{ ergebnis.ergebnis_teilnehmer }}</div>
         <div class="col"></div>
@@ -77,14 +91,14 @@
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Minitramp.:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_mini_s }}</div>
-        <div class="col"></div>
-    </div>
-    <div class="row">
-        <div class="col"></div>
         <div class="col-4 text-end">Reck/Stufenb.:</div>
         <div class="col-4">{{ ergebnis.ergebnis_reck_s }}</div>
+        <div class="col"></div>
+    </div>
+        <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Minitramp.:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_mini_s }}</div>
         <div class="col"></div>
     </div>
     <div class="row">

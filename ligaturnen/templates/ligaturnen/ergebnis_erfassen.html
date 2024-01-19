@@ -22,7 +22,14 @@
 
     <form class="form-inline" action="" method="POST">
         {% csrf_token %}
-        {{ form.non_field_errors }}
+
+        <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-5 text-danger text-center">{{ form.non_field_errors }}</div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+        </div>
         <input type="hidden" name="ergebnis_teilnehmer" value="{{ form.teilnehmer_id }}">
         <input type="hidden" name="geraet" value="{{ form.geraet }}">
         <input type="hidden" name="ergebnis_ligatag" value="{{ form.ligatag }}">
@@ -274,7 +281,7 @@
             <div class="col-sm-5 text-end">
                 <button class="btn btn-secondary" type="submit">Ergebnis speichern</button>
             </div>
-            <div class="col-sm-5"></div>
+            <div class="col-sm-5"><a class="nav-link" href="{% url 'ligaturnen:ergebnis_erfassen_suche'%}">zurück</a></div>
         </div>
    </form>
 </div>
