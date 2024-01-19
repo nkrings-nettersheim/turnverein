@@ -134,23 +134,26 @@ class LigaturnenErgebnisseZwischenLiga(models.Model):
     verein = models.ForeignKey(Vereine, on_delete=models.PROTECT, null=True)
     mannschaft = models.IntegerField(null=True, default=1, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER, default='w')
-    ergebnis_sprung_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_mini_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_reck_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_balken_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_barren_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_boden_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ligatag = models.CharField(max_length=1, default=1, null=True)
     ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.liga) + " " + str(self.verein) + " " + str(self.mannschaft)
 
-    #def save(self, *args, **kwargs):
-    #    self.ergebnis_summe = self.ergebnis_sprung_s + self.ergebnis_mini_s + self.ergebnis_reck_s + \
-    #                          self.ergebnis_balken_s + self.ergebnis_barren_s + self.ergebnis_boden_s
 
-    #    super(LigaturnenErgebnisseZwischenLiga, self).save(*args, **kwargs)
+class LigaturnenErgebnisseZwischenLigaGesamt(models.Model):
+    GENDER = (
+        ('w', 'weiblich'),
+        ('m', 'männlich'),
+    )
+    liga = models.ForeignKey(Ligen, on_delete=models.PROTECT, null=True)
+    verein = models.ForeignKey(Vereine, on_delete=models.PROTECT, null=True)
+    mannschaft = models.IntegerField(null=True, default=1, blank=True)
+    gender = models.CharField(max_length=1, choices=GENDER, default='w')
+    ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
 
+    def __str__(self):
+        return str(self.liga) + " " + str(self.verein) + " " + str(self.mannschaft)
 
 class LigaturnenErgebnisseZwischenEinzel(models.Model):
 
@@ -190,3 +193,10 @@ class LigaTag(models.Model):
     def __str__(self):
         return str(self.ligatag)
 
+class Konfiguration(models.Model):
+    abstand_urkunde_einzel = models.IntegerField(default=0, null=True, blank=True,)
+    abstand_urkunde_mannschaft = models.IntegerField(default=0, null=True, blank=True,)
+    liga_jahr = models.CharField(max_length=4, blank=True, default='', null=True)
+
+    def __str__(self):
+        return str(self.abstand_urkunde_einzel)

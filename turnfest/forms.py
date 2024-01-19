@@ -23,6 +23,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_sprung_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -33,6 +34,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_sprung_b = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -42,6 +44,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_mini_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -51,6 +54,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_mini_b = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -60,6 +64,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_reck_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -69,6 +74,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_reck_b = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -78,6 +84,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_balken_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -87,6 +94,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_balken_b = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -96,6 +104,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_barren_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -105,6 +114,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_barren_b = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -114,6 +124,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_boden_a = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
@@ -123,6 +134,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_boden_b = forms.DecimalField(
         initial=0.00,
         max_value=10,
+        min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',

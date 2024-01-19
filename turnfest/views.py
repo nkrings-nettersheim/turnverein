@@ -6,8 +6,8 @@ import pandas as pd
 from datetime import datetime
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin, PermissionRequiredMixin
 from django.db.models import Count, DateField, DateTimeField
 from django.db.models.functions import Cast, TruncDate
 from django.shortcuts import render, redirect, get_object_or_404
@@ -53,10 +53,12 @@ def index(request):
     return render(request, 'turnfest/index.html')
 
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def bezirksturnfest(request):
     return render(request, 'turnfest/bezirksturnfest.html')
 
 @login_required
+@permission_required('ligaturnen.view_ligaturnenergebnisse')
 def ligawettkampf(request):
     return render(request, 'turnfest/ligawettkampf.html')
 
@@ -72,34 +74,40 @@ def datenschutz(request):
 ##########################################################################
 # Area Verein create and change
 ##########################################################################
-class VereineCreateView(LoginRequiredMixin, CreateView):
+class VereineCreateView(PermissionRequiredMixin, CreateView):
+    permission_required = "turnfest.add_vereine"
     model = Vereine
     template_name = "turnfest/vereine_create.html"
     form_class = VereinErfassenForm
     success_url = reverse_lazy("turnfest:vereine_list")
 
 
-class VereineListView(LoginRequiredMixin, ListView):
+class VereineListView(PermissionRequiredMixin, ListView):
+    permission_required = "turnfest.view_vereine"
     model = Vereine
 
 
-class VereineDetailView(LoginRequiredMixin, DetailView):
+class VereineDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = "turnfest.view_vereine"
     model = Vereine
 
 
-class VereineUpdateView(LoginRequiredMixin, UpdateView):
+class VereineUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = "turnfest.change_vereine"
     model = Vereine
     template_name = "turnfest/vereine_update.html"
     fields = '__all__'
     success_url = "/turnfest/vereine_list/"
 
 
-class VereineDeleteView(LoginRequiredMixin, DeleteView):
+class VereineDeleteView(PermissionRequiredMixin, DeleteView):
+    permission_required = "turnfest.delete_ligatag"
     model = Vereine
     template_name = "turnfest/vereine_delete.html"
     success_url = reverse_lazy("turnfest:vereine_list")
 
 @login_required
+@permission_required('turnfest.view_vereine')
 def report_vereine(request):
     vereine = Vereine.objects.all()
 
@@ -122,7 +130,8 @@ def report_vereine(request):
 ##########################################################################
 # Area Teilnehmer create and change
 ##########################################################################
-class TeilnehmerCreateView(LoginRequiredMixin, CreateView):
+class TeilnehmerCreateView(PermissionRequiredMixin, CreateView):
+    permission_required = "turnfest.add_teilnehmer"
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_create.html"
     form_class = TeilnehmerErfassenForm
@@ -130,17 +139,19 @@ class TeilnehmerCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
-class TeilnehmerList(LoginRequiredMixin, ListView):
+class TeilnehmerList(PermissionRequiredMixin, ListView):
+    permission_required = "turnfest.view_teilnehmer"
+    model = Teilnehmer
+    ordering = ['-teilnehmer_geburtsjahr', 'teilnehmer_verein', 'teilnehmer_name', 'teilnehmer_vorname']
+
+
+class TeilnehmerDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = "turnfest.view_teilnehmer"
     model = Teilnehmer
 
-    ordering = ['teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_name']
 
-
-class TeilnehmerDetailView(LoginRequiredMixin, DetailView):
-    model = Teilnehmer
-
-
-class TeilnehmerUpdateView(LoginRequiredMixin, UpdateView):
+class TeilnehmerUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = "turnfest.change_teilnehmer"
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_update.html"
     # fields = '__all__'
@@ -148,7 +159,8 @@ class TeilnehmerUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
 
-class TeilnehmerDeleteView(LoginRequiredMixin, DeleteView):
+class TeilnehmerDeleteView(PermissionRequiredMixin, DeleteView):
+    permission_required = "turnfest.delete_teilnehmer"
     model = Teilnehmer
     template_name = "turnfest/teilnehmer_delete.html"
     success_url = reverse_lazy("turnfest:teilnehmer_list")
@@ -157,22 +169,26 @@ class TeilnehmerDeleteView(LoginRequiredMixin, DeleteView):
 ##########################################################################
 # Area Wettkampfteilnehmer create and change
 ##########################################################################
-class WettkampfteilnahmeCreateView(LoginRequiredMixin, CreateView):
+class WettkampfteilnahmeCreateView(PermissionRequiredMixin, CreateView):
+    permission_required = "turnfest.add_wettkampfteilnahme"
     model = Wettkampfteilnahme
     template_name = "turnfest/wettkampfteilnahme_create.html"
     fields = '__all__'
     success_url = "/"
 
 
-class WettkampfteilnahmeList(LoginRequiredMixin, ListView):
+class WettkampfteilnahmeList(PermissionRequiredMixin, ListView):
+    permission_required = "turnfest.view_wettkampftag"
     model = Wettkampfteilnahme
 
 
-class WettkampfteilnahmeDetailView(LoginRequiredMixin, DetailView):
+class WettkampfteilnahmeDetailView(PermissionRequiredMixin, DetailView):
+    permission_required = "turnfest.view_wettkampftag"
     model = Wettkampfteilnahme
 
 
-class WettkampfteilnahmeUpdateView(LoginRequiredMixin, UpdateView):
+class WettkampfteilnahmeUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = "turnfest.change_wettkampftag"
     model = Wettkampfteilnahme
     template_name = "turnfest/wettkampfteilnahme_update.html"
     fields = '__all__'
@@ -183,11 +199,10 @@ class WettkampfteilnahmeUpdateView(LoginRequiredMixin, UpdateView):
 # Area Wettkampflisten erzeugen
 ##########################################################################
 @login_required
+@permission_required('turnfest.view_teilnehmer')
 def report_geraetelisten_old(request):
     riegen = Riegen.objects.all()
     geraete = Geraete.objects.all()
-    # teilnehmer_geburtsjahr_group = Teilnehmer.objects.values('teilnehmer_geburtsjahr').annotate(
-    #    count=Count('teilnehmer_geburtsjahr'))
 
     # Definieren Sie die gewünschte Schriftart und laden Sie sie
     font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
@@ -282,6 +297,7 @@ def report_geraetelisten_old(request):
     return FileResponse(buffer, as_attachment=True, filename="Wettkampfliste.pdf")
 
 @login_required
+@permission_required('turnfest.view_teilnehmer')
 def report_geraetelisten(request):
     riegen = Riegen.objects.all()
     geraete = Geraete.objects.all()
@@ -433,6 +449,7 @@ def report_geraetelisten(request):
     return response
 
 @login_required
+@permission_required('turnfest.view_teilnehmer')
 def teilnehmer_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -443,7 +460,6 @@ def teilnehmer_upload(request):
         form = UploadFileForm()
     return render(request, 'turnfest/teilnehmer_upload.html', {'form': form})
 
-@login_required
 def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file)
@@ -473,6 +489,7 @@ def handle_uploaded_file(file):
 # Area Ergebnisse erfassen
 ##########################################################################
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def ergebnis_erfassen_suche(request):
     if request.method == "POST":
         startnummer = request.POST['startnummer']
@@ -496,6 +513,7 @@ def ergebnis_erfassen_suche(request):
     return render(request, 'turnfest/ergebnis_erfassen_suche.html', {'form': form})
 
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def ergebnis_erfassen(request):
     if request.method == "POST":
         pass
@@ -506,20 +524,23 @@ def ergebnis_erfassen(request):
     return render(request, 'turnfest/ergebnis_erfassen_suche.html', {'form': form})
 
 
-class ErgebnisCreateView(LoginRequiredMixin, CreateView):
+class ErgebnisCreateView(PermissionRequiredMixin, CreateView):
+    permission_required = "turnfest.view_bezirksturnfestergebnisse"
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
     # fields = '__all__'
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
 
-class ErgebnisUpdateView(LoginRequiredMixin, UpdateView):
+class ErgebnisUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = "turnfest.view_bezirksturnfestergebnisse"
     model = BezirksturnfestErgebnisse
     template_name = "turnfest/ergebnis_erfassen.html"
     form_class = ErgebnisTeilnehmererfassenForm
     success_url = reverse_lazy("turnfest:ergebnis_erfassen_suche")
 
 @login_required
+@permission_required('turnfest.change_bezirksturnfestergebnisse')
 def add_ergebnis(request):
     if request.method == "POST":
         form = ErgebnisTeilnehmererfassenForm(request.POST)
@@ -538,6 +559,7 @@ def add_ergebnis(request):
     return render(request, 'turnfest/ergebnis_erfassen.html', {'form': form})
 
 @login_required
+@permission_required('turnverin.change_bezirksturnfestergebnisse')
 def edit_ergebnis(request, id=None):
     item = get_object_or_404(BezirksturnfestErgebnisse, id=id)
     form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
@@ -556,6 +578,7 @@ def edit_ergebnis(request, id=None):
 # Area Auswertung Bezirksturnfest erfassen
 ##########################################################################
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def report_auswertung(request):
     meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
 
@@ -713,6 +736,7 @@ def report_auswertung(request):
     return FileResponse(buffer, as_attachment=True, filename="Ergebnislisten.pdf")
 
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def report_urkunden(request):
     meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
 
@@ -792,6 +816,7 @@ def report_urkunden(request):
     return FileResponse(buffer, as_attachment=False, filename="Urkunden_Bezirksturnfest.pdf")
 
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def vereine_upload(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -803,6 +828,7 @@ def vereine_upload(request):
     return render(request, 'turnfest/vereine_upload.html', {'form': form})
 
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def vereine_handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file, na_filter=False)
@@ -828,6 +854,7 @@ def vereine_handle_uploaded_file(file):
 ##########################################################################
 
 @login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
 def delete_tables_bezirksturnfest(request):
     if request.method == 'POST':
         count_ergebnisse = BezirksturnfestErgebnisse.objects.all().delete()

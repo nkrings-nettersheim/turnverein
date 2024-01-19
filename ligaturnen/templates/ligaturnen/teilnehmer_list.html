@@ -37,14 +37,14 @@
       <tr>
           <th class="col-sm-1 text-center">Startnr.</th>
           <th class="col-sm-1 text-center">Liga Tag</th>
+          <th class="col-sm-1 text-center">Liga</th>
+          <th class="col-sm-1 text-center">Verein</th>
+          <th class="col-sm-1 text-center">Mannschaft</th>
           <th class="col-sm-1">Name</th>
           <th class="col-sm-1">Vorname</th>
           <th class="col-sm-1 text-center">Geburtsjahr</th>
           <th class="col-sm-1 text-center">Geschlecht</th>
-          <th class="col-sm-1 text-center">Verein</th>
           <th class="col-sm-1 text-center">Anwesend</th>
-          <th class="col-sm-1 text-center">Liga</th>
-          <th class="col-sm-1 text-center">Mannschaft</th>
           <th class="col-sm-1 text-center">ak</th>
           <th class="col-sm-1 text-center">Bearbeiten</th>
       </tr>
@@ -54,14 +54,14 @@
         <tr>
             <td class="text-center">{{ teilnehmer.id }}</td>
             <td class="text-center">{{ teilnehmer.teilnehmer_liga_tag }}</td>
+            <td class="text-center">{{ teilnehmer.teilnehmer_liga }}</td>
+            <td class="text-center">{{ teilnehmer.teilnehmer_verein }}</td>
+            <td class="text-center">{{ teilnehmer.teilnehmer_mannschaft }}</td>
             <td>{{ teilnehmer.teilnehmer_name }}</td>
             <td>{{ teilnehmer.teilnehmer_vorname }}</td>
             <td class="text-center">{{ teilnehmer.teilnehmer_geburtsjahr|date:"Y" }}</td>
             <td class="text-center">{{ teilnehmer.teilnehmer_gender }}</td>
-            <td class="text-center">{{ teilnehmer.teilnehmer_verein }}</td>
             <td class="text-center">{{ teilnehmer.teilnehmer_anwesend|yesno:"Ja,Nein" }}</td>
-            <td class="text-center">{{ teilnehmer.teilnehmer_liga }}</td>
-            <td class="text-center">{{ teilnehmer.teilnehmer_mannschaft }}</td>
             <td class="text-center">{{ teilnehmer.teilnehmer_ak|yesno:"Ja,Nein" }}</td>
 
               <td class="col-sm-1 text-center">

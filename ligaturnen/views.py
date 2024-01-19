@@ -1,57 +1,57 @@
 import pandas as pd
 import io
+import logging
+import locale
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.shortcuts import render
-from datetime import datetime, timezone
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from datetime import datetime
 
 from django.conf import settings
-from django.db.models import Count, DateField, DateTimeField
-from django.db.models.functions import Cast, TruncDate
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
-from django.template.loader import render_to_string
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required, permission_required
 
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4, letter
+from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Table, TableStyle, Frame
-from reportlab.graphics.shapes import Line
+from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph, SimpleDocTemplate, PageBreak, Spacer
 
-from django.views import View
-from weasyprint import HTML, CSS
-
 from turnverein.settings import BASE_DIR
 
 from .models import Vereine, Teilnehmer, Ligen, Geraete, LigaturnenErgebnisse, LigaturnenErgebnisseZwischenLiga, \
-    LigaTag, LigaturnenErgebnisseZwischenEinzel
+    LigaTag, LigaturnenErgebnisseZwischenEinzel, LigaturnenErgebnisseZwischenLigaGesamt, Konfiguration
 from .forms import VereinErfassenForm, LigaErfassenForm, TeilnehmerErfassenForm, UploadFileForm, \
     ErgebnisTeilnehmererfassenForm, ErgebnisTeilnehmerSuchen, TablesDeleteForm
+
+logger = logging.getLogger(__name__)
+locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
+
 
 @login_required
 def index(request):
     return render(request, 'ligaturnen/index.html')
 
+
 @login_required
 def impressum(request):
     return render(request, 'ligaturnen/impressum.html')
 
+
 @login_required
 def datenschutz(request):
     return render(request, 'ligaturnen/datenschutz.html')
+
 
 @login_required
 def ligawettkampf(request):
@@ -59,9 +59,13 @@ def ligawettkampf(request):
     teilnehmer_2 = Teilnehmer.objects.filter(teilnehmer_liga_tag="2").count()
 
     dashboard = {}
-    dashboard["teilnehmer_1"]= teilnehmer_1
-    dashboard["teilnehmer_2"]= teilnehmer_2
+    dashboard["teilnehmer_1"] = teilnehmer_1
+    dashboard["teilnehmer_2"] = teilnehmer_2
 
+    request.session['geraet'] = ""
+    request.session['teilnehmer'] = ""
+
+    logger.info(f"User {request.user.id} hat die Startseite des Ligawettkampfs aufgerufen")
     return render(request, 'ligaturnen/ligawettkampf.html', {'dashboard': dashboard})
 
 
@@ -74,6 +78,10 @@ class VereineCreateView(PermissionRequiredMixin, CreateView):
     template_name = "ligaturnen/vereine_create.html"
     form_class = VereinErfassenForm
     success_url = reverse_lazy("ligaturnen:vereine_list")
+
+    def get(self, request, *args, **kwargs):
+        logger.info(f"Anlegen Verein gestartet")
+        return super().get(request, *args, **kwargs)
 
 
 class VereineListView(PermissionRequiredMixin, ListView):
@@ -152,7 +160,8 @@ class TeilnehmerCreateView(PermissionRequiredMixin, CreateView):
 class TeilnehmerList(PermissionRequiredMixin, ListView):
     permission_required = "ligaturnen.view_teilnehmer"
     model = Teilnehmer
-    ordering = ['teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_name']
+    ordering = ['teilnehmer_liga_tag', 'teilnehmer_liga', 'teilnehmer_verein', 'teilnehmer_mannschaft',
+                'teilnehmer_name', 'teilnehmer_vorname']
 
 
 class TeilnehmerDetailView(PermissionRequiredMixin, DetailView):
@@ -176,7 +185,7 @@ class TeilnehmerDeleteView(PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy("ligaturnen:teilnehmer_list")
 
 
-#@permission_required('reports.add_process_report')
+# @permission_required('reports.add_process_report')
 @login_required
 @permission_required('ligaturnen.add_teilnehmer')
 def teilnehmer_upload(request):
@@ -186,6 +195,7 @@ def teilnehmer_upload(request):
             countdict = handle_uploaded_file(request.FILES['file'])
             request.session['count_positiv'] = str(countdict["count_positiv"])
             request.session['count_negativ'] = str(countdict["count_negativ"])
+            logger.info(f"User {request.user.id} hat eine neue Teilnehmerliste hochgeladen")
             return redirect('/ligaturnen/teilnehmer_list/')
     else:
         form = UploadFileForm()
@@ -303,13 +313,13 @@ def report_geraetelisten(request):
 
     # Create a list to store the content for the PDF
     content = []
-
     for geraet in geraete:
         for liga in ligen:
 
             teilnehmer_alle = []
 
             if geraet.geraet_db_name == "teilnehmer_sprung":
+
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_sprung__gt=0,
                     teilnehmer_liga_tag=ligaTag,
@@ -380,6 +390,7 @@ def report_geraetelisten(request):
                                                       'teilnehmer_geburtsjahr',
                                                       'teilnehmer_boden'
                                                       ).order_by('teilnehmer_boden')
+
             if teilnehmer_alle:
                 content.append(Paragraph('Ligaturnen ' + str(ligaTag.ligajahr), styles['CenterAlign20']))
                 content.append(Spacer(1, 4))
@@ -424,26 +435,59 @@ def report_geraetelisten(request):
 @login_required
 @permission_required('ligaturnen.view_ligaturnenergebnisse')
 def ergebnis_erfassen_suche(request):
+    # request.session['geraet'] != ""
+    # request.session['teilnehmer'] = ""
+
     if request.method == "POST":
         startnummer = request.POST['startnummer']
         geraete_id = request.POST['geraet']
-        teilnehmer = Teilnehmer.objects.get(id=startnummer)
         ligatag = LigaTag.objects.get(id=1)
-        # geraet = Geraete.objects.get(id=geraete_id)
-        if teilnehmer:
+        request.session['startnummer'] = str(startnummer)
+        request.session['geraet'] = str(geraete_id)
+        request.session['ligatag'] = str(ligatag)
+
+        try:
+            teilnehmer = Teilnehmer.objects.get(id=startnummer, teilnehmer_liga_tag=ligatag.ligatag)
             try:
                 ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
-                return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/?geraet=' + str(geraete_id) + "&ligatag=" + str(ligatag))
+                # return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/?geraet=' + str(geraete_id) + "&ligatag=" + str(ligatag))
+                return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/')
             except:
-                return redirect("/ligaturnen/add/ergebnis" + "/?start=" + startnummer + "&geraet=" + str(geraete_id) + "&ligatag=" + str(ligatag))
+                # return redirect("/ligaturnen/add/ergebnis" + "/?start=" + startnummer + "&geraet=" + str(geraete_id) + "&ligatag=" + str(ligatag))
+                return redirect("/ligaturnen/add/ergebnis" + "/")
 
-        else:
+        except:
             form = ErgebnisTeilnehmerSuchen()
+            form.startnummerfalse = True
             return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
 
+        # if teilnehmer:
+    #            try:
+    #                ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
+    #                return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/?geraet=' + str(geraete_id) + "&ligatag=" + str(ligatag))
+    #            except:
+    #                return redirect("/ligaturnen/add/ergebnis" + "/?start=" + startnummer + "&geraet=" + str(geraete_id) + "&ligatag=" + str(ligatag))
+
+    #        else:
+    #            form = ErgebnisTeilnehmerSuchen()
+    #            form.startnummerfalse = True
+    #            return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
+
     else:
-        geraet_option = request.GET.get('geraet')
-        teilnehmer_id = request.GET.get('teilnehmer')
+        # geraet_option = request.GET.get('geraet')
+        # teilnehmer_id = request.GET.get('teilnehmer')
+        if request.session['geraet']:
+            geraet_option = request.session['geraet']
+        else:
+            geraet_option = ""
+
+        if request.session['teilnehmer']:
+            teilnehmer_id = request.session['teilnehmer']
+        else:
+            teilnehmer_id = ""
+
+        # geraet_option_2 = request.session['geraet']
+        # request.session['startnummer']
         if teilnehmer_id:
             ergebnis = LigaturnenErgebnisse.objects.get(id=teilnehmer_id)
         else:
@@ -454,7 +498,7 @@ def ergebnis_erfassen_suche(request):
     return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form, 'ergebnis': ergebnis})
 
 
-#def ergebnis_erfassen(request):
+# def ergebnis_erfassen(request):
 #    if request.method == "POST":
 #        pass
 #
@@ -464,14 +508,14 @@ def ergebnis_erfassen_suche(request):
 #    return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
 
 
-#class ErgebnisCreateView(LoginRequiredMixin, CreateView):
+# class ErgebnisCreateView(LoginRequiredMixin, CreateView):
 #    model = LigaturnenErgebnisse
 #    template_name = "ligaturnen/ergebnis_erfassen.html"
 #    form_class = ErgebnisTeilnehmererfassenForm
-    # fields = '__all__'
+# fields = '__all__'
 #    success_url = reverse_lazy("ligaturnen:ergebnis_erfassen_suche")
 
-#class ErgebnisUpdateView(LoginRequiredMixin, UpdateView):
+# class ErgebnisUpdateView(LoginRequiredMixin, UpdateView):
 #    model = LigaturnenErgebnisse
 #    template_name = "ligaturnen/ergebnis_erfassen.html"
 #    form_class = ErgebnisTeilnehmererfassenForm
@@ -486,15 +530,20 @@ def add_ergebnis(request):
         if form.is_valid():
             item = form.save(commit=False)
             item.save()
-            geraet = request.GET.get('geraet')
-            return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + str(item.id))
+            request.session['teilnehmer'] = str(item.id)
+            # geraet = request.GET.get('geraet')
+            # geraet = request.session['geraet']
+            # return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + str(item.id))
+            return redirect('/ligaturnen/ergebnis_erfassen_suche/')
         else:
             for field in form:
                 print("Field Error:", field.name, field.errors)
     else:
-        startnummer = request.GET.get('start')
-        geraete_id = request.GET.get('geraet')
-        teilnehmer = Teilnehmer.objects.get(id=startnummer)
+        # startnummer = request.GET.get('start')
+        # geraete_id = request.GET.get('geraet')
+        # startnummer = request.session['start']
+        # geraete_id = request.session['geraet']
+        teilnehmer = Teilnehmer.objects.get(id=request.session['startnummer'])
         ligatag = LigaTag.objects.get(id=1)
 
         form = ErgebnisTeilnehmererfassenForm()
@@ -506,21 +555,46 @@ def add_ergebnis(request):
         form.balken = teilnehmer.teilnehmer_balken
         form.barren = teilnehmer.teilnehmer_barren
         form.boden = teilnehmer.teilnehmer_boden
-        form.geraet = geraete_id
+        form.geraet = request.session['geraet']
         form.ligatag = ligatag
         form.add = True  # Damit im Formular die hidden Felder eingeblendet werden
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
+
 
 @login_required
 @permission_required('ligaturnen.add_ligaturnenergebnisse')
 def edit_ergebnis(request, id=None):
     item = get_object_or_404(LigaturnenErgebnisse, id=id)
+    anzahl_geraete = 0
+    if item.ergebnis_sprung_s > 0:
+        anzahl_geraete = anzahl_geraete + 1
+    if item.ergebnis_reck_s > 0:
+        anzahl_geraete = anzahl_geraete + 1
+    if item.ergebnis_mini_s > 0:
+        anzahl_geraete = anzahl_geraete + 1
+    if item.ergebnis_balken_s > 0:
+        anzahl_geraete = anzahl_geraete + 1
+    if item.ergebnis_barren_s > 0:
+        anzahl_geraete = anzahl_geraete + 1
+    if item.ergebnis_boden_s > 0:
+        anzahl_geraete = anzahl_geraete + 1
+
+    # print(anzahl_geraete)
+
     form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
 
+    # if anzahl_geraete < 5:
     if form.is_valid():
         form.save()
-        geraet = request.GET.get('geraet')
-        return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + id)
+        # geraet = request.GET.get('geraet')
+        # geraet = request.session['geraet']
+        request.session['teilnehmer'] = id
+        # print(request.session['teilnehmer'] + "; " + request.session['geraet'])
+        # assert False
+        # return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + id)
+        return redirect('/ligaturnen/ergebnis_erfassen_suche/')
+    # else:
+    # return redirect('/ligaturnen/ergebnis_erfassen_suche/')
 
     ligatag = LigaTag.objects.get(id=1)
     form.id = item.id
@@ -532,7 +606,8 @@ def edit_ergebnis(request, id=None):
     form.balken = item.ergebnis_teilnehmer.teilnehmer_balken
     form.barren = item.ergebnis_teilnehmer.teilnehmer_barren
     form.boden = item.ergebnis_teilnehmer.teilnehmer_boden
-    form.geraet = request.GET.get('geraet')
+    # form.geraet = request.GET.get('geraet')
+    form.geraet = request.session['geraet']
     form.ligatag = ligatag
     # assert False
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
@@ -542,13 +617,15 @@ def edit_ergebnis(request, id=None):
 # Area Auswertung Ligaturnen Mannschaften
 ##########################################################################
 @login_required
-@permission_required('ligaturnen.add_ligaturnenergebnissezwischenliga')
+@permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_auswertung_mannschaft(request):
     ligen = Ligen.objects.all()
     vereine = Vereine.objects.all()
     ligaTag = LigaTag.objects.get(id=1)
+    configuration = Konfiguration.objects.get(id=1)
 
     gender = ['w', 'm']
+    ligatage = ['1', '2']
 
     font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
     pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
@@ -567,10 +644,135 @@ def report_auswertung_mannschaft(request):
 
     # Ermittlung der Ergebnisse für die Mannschaften und speichern in der Zwischentabelle
     count_zwischenergebnisse = LigaturnenErgebnisseZwischenLiga.objects.all().delete()
+    count_zwischenergebnisse_gesamt = LigaturnenErgebnisseZwischenLigaGesamt.objects.all().delete()
 
     for liga in ligen:
         for verein in vereine:
-            for mannschaft in range(3):
+            for mannschaft in range(1, 3):
+                for gen in gender:
+                    for ligatag in ligatage:
+                        erg_zwischen = []
+                        erg_summe = 0
+
+                        try:
+                            erg_sprung = LigaturnenErgebnisse.objects.filter(
+                                ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
+                                ergebnis_teilnehmer__teilnehmer_verein=verein,
+                                ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
+                                ergebnis_teilnehmer__teilnehmer_ak=0,
+                                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                                ergebnis_ligatag=ligatag
+                            ).order_by('-ergebnis_sprung_s')[:3]
+                            if erg_sprung:
+                                for erg in erg_sprung:
+                                    erg_zwischen.append(erg.ergebnis_sprung_s)
+                        except:
+                            pass
+
+                        try:
+                            erg_mini = LigaturnenErgebnisse.objects.filter(
+                                ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
+                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
+                                ergebnis_teilnehmer__teilnehmer_verein=verein,
+                                ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
+                                ergebnis_teilnehmer__teilnehmer_ak=0,
+                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                            ).order_by('-ergebnis_mini_s')[:3]
+                            if erg_mini:
+                                for erg in erg_mini:
+                                    erg_zwischen.append(erg.ergebnis_mini_s)
+                        except:
+                            pass
+
+                        try:
+                            erg_reck = LigaturnenErgebnisse.objects.filter(
+                                ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
+                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
+                                ergebnis_teilnehmer__teilnehmer_verein=verein,
+                                ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
+                                ergebnis_teilnehmer__teilnehmer_ak=0,
+                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                            ).order_by('-ergebnis_reck_s')[:3]
+                            if erg_reck:
+                                for erg in erg_reck:
+                                    erg_zwischen.append(erg.ergebnis_reck_s)
+                        except:
+                            pass
+
+                        try:
+                            erg_barren = LigaturnenErgebnisse.objects.filter(
+                                ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
+                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
+                                ergebnis_teilnehmer__teilnehmer_verein=verein,
+                                ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
+                                ergebnis_teilnehmer__teilnehmer_ak=0,
+                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                            ).order_by('-ergebnis_barren_s')[:3]
+                            if erg_barren:
+                                for erg in erg_barren:
+                                    erg_zwischen.append(erg.ergebnis_barren_s)
+                        except:
+                            pass
+
+                        try:
+                            erg_balken = LigaturnenErgebnisse.objects.filter(
+                                ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
+                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
+                                ergebnis_teilnehmer__teilnehmer_verein=verein,
+                                ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
+                                ergebnis_teilnehmer__teilnehmer_ak=0,
+                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                            ).order_by('-ergebnis_balken_s')[:3]
+                            if erg_balken:
+                                for erg in erg_balken:
+                                    erg_zwischen.append(erg.ergebnis_balken_s)
+                        except:
+                            pass
+                        try:
+                            erg_boden = LigaturnenErgebnisse.objects.filter(
+                                ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
+                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
+                                ergebnis_teilnehmer__teilnehmer_verein=verein,
+                                ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
+                                ergebnis_teilnehmer__teilnehmer_ak=0,
+                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                            ).order_by('-ergebnis_boden_s')[:3]
+                            if erg_boden:
+                                for erg in erg_boden:
+                                    erg_zwischen.append(erg.ergebnis_boden_s)
+                        except:
+                            pass
+
+                        # sortieren des List Objekts:
+                        erg_zwischen.sort(reverse=True)
+
+                        if len(erg_zwischen) >= 12:
+                            anzahl = 12
+                        else:
+                            anzahl = len(erg_zwischen)
+
+                        for i in range(anzahl):
+                            erg_summe = erg_summe + erg_zwischen[i]
+
+                        if erg_summe > 0:
+
+                            mannschaftergebnis = LigaturnenErgebnisseZwischenLiga(
+                                liga=liga,
+                                ligatag=ligatag,
+                                verein=verein,
+                                mannschaft=mannschaft,
+                                gender=gen,
+                                ergebnis_summe=erg_summe
+                            )
+
+                            try:
+                                mannschaftergebnis.save()
+                            except:
+                                pass
+
+    for liga in ligen:
+        for verein in vereine:
+            for mannschaft in range(1, 3):
                 for gen in gender:
                     sprung = 0
                     mini = 0
@@ -578,116 +780,30 @@ def report_auswertung_mannschaft(request):
                     barren = 0
                     balken = 0
                     boden = 0
-                    erg_zwischen = []
                     erg_summe = 0
 
                     try:
-                        erg_sprung = LigaturnenErgebnisse.objects.filter(
-                            ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                            ergebnis_teilnehmer__teilnehmer_verein=verein,
-                            ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
-                            ergebnis_teilnehmer__teilnehmer_ak=False,
-                            ergebnis_teilnehmer__teilnehmer_gender=gen
-                        ).order_by('-ergebnis_sprung_s')[:3]
-                        if erg_sprung:
-                            for erg in erg_sprung:
-                                erg_zwischen.append(erg.ergebnis_sprung_s)
-                                #sprung = erg.ergebnis_sprung_s + sprung
+                        ergebnis = LigaturnenErgebnisseZwischenLiga.objects.filter(
+                            liga=liga,
+                            verein=verein,
+                            mannschaft=mannschaft,
+                            gender=gen,
+                        )
+                        if ergebnis:
+                            for erg in ergebnis:
+                                sprung = sprung + erg.ergebnis_sprung_s
+                                reck = reck + erg.ergebnis_reck_s
+                                mini = mini + erg.ergebnis_mini_s
+                                balken = balken + erg.ergebnis_balken_s
+                                barren = barren + erg.ergebnis_barren_s
+                                boden = boden + erg.ergebnis_boden_s
+                                erg_summe = erg_summe + erg.ergebnis_summe
+
                     except:
                         pass
-
-                    try:
-                        erg_mini = LigaturnenErgebnisse.objects.filter(
-                            ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                            ergebnis_teilnehmer__teilnehmer_verein=verein,
-                            ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
-                            ergebnis_teilnehmer__teilnehmer_ak=False,
-                            ergebnis_teilnehmer__teilnehmer_gender = gen
-                        ).order_by('-ergebnis_mini_s')[:3]
-                        if erg_mini:
-                            for erg in erg_mini:
-                                erg_zwischen.append(erg.ergebnis_mini_s)
-                                #mini = erg.ergebnis_mini_s + mini
-                    except:
-                        pass
-
-                    try:
-                        erg_reck = LigaturnenErgebnisse.objects.filter(
-                            ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                            ergebnis_teilnehmer__teilnehmer_verein=verein,
-                            ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
-                            ergebnis_teilnehmer__teilnehmer_ak=False,
-                            ergebnis_teilnehmer__teilnehmer_gender=gen
-                        ).order_by('-ergebnis_reck_s')[:3]
-                        if erg_reck:
-                            for erg in erg_reck:
-                                erg_zwischen.append(erg.ergebnis_reck_s)
-                                #reck = erg.ergebnis_reck_s + reck
-                    except:
-                        pass
-
-                    try:
-                        erg_barren = LigaturnenErgebnisse.objects.filter(
-                            ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                            ergebnis_teilnehmer__teilnehmer_verein=verein,
-                            ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
-                            ergebnis_teilnehmer__teilnehmer_ak=False,
-                            ergebnis_teilnehmer__teilnehmer_gender=gen
-                        ).order_by('-ergebnis_barren_s')[:3]
-                        if erg_barren:
-                            for erg in erg_barren:
-                                erg_zwischen.append(erg.ergebnis_barren_s)
-                                #barren = erg.ergebnis_barren_s + barren
-                    except:
-                        pass
-
-                    try:
-                        erg_balken = LigaturnenErgebnisse.objects.filter(
-                            ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                            ergebnis_teilnehmer__teilnehmer_verein=verein,
-                            ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
-                            ergebnis_teilnehmer__teilnehmer_ak=False,
-                            ergebnis_teilnehmer__teilnehmer_gender=gen
-                        ).order_by('-ergebnis_balken_s')[:3]
-                        if erg_balken:
-                            for erg in erg_balken:
-                                erg_zwischen.append(erg.ergebnis_balken_s)
-                                #balken = erg.ergebnis_balken_s + balken
-                    except:
-                        pass
-
-                    try:
-                        erg_boden = LigaturnenErgebnisse.objects.filter(
-                            ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                            ergebnis_teilnehmer__teilnehmer_verein=verein,
-                            ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
-                            ergebnis_teilnehmer__teilnehmer_ak=False,
-                            ergebnis_teilnehmer__teilnehmer_gender=gen
-                        ).order_by('-ergebnis_boden_s')[:3]
-                        if erg_boden:
-                            for erg in erg_boden:
-                                erg_zwischen.append(erg.ergebnis_boden_s)
-                                #boden = erg.ergebnis_boden_s + boden
-                    except:
-                        pass
-
-                    #sortieren des List Objekts:
-                    erg_zwischen.sort(reverse = True)
-                    #print(len(erg_zwischen))
-                    if len(erg_zwischen) >= 12:
-                        anzahl = 12
-                    else:
-                        anzahl = len(erg_zwischen)
-
-                    for i in range(anzahl):
-                        erg_summe = erg_summe + erg_zwischen[i]
-
 
                     if erg_summe > 0:
-                        #print("Geschlecht: " + str(gen) + "; Mannschaft" + str(mannschaft) + "; Verein: " + str(
-                        #    verein) + "; Liga: " + str(liga) + "; Summe: " + str(erg_summe))
-
-                        mannschaftergebnis = LigaturnenErgebnisseZwischenLiga(
+                        mannschaftergebnisgesamt = LigaturnenErgebnisseZwischenLigaGesamt(
                             liga=liga,
                             verein=verein,
                             mannschaft=mannschaft,
@@ -696,48 +812,52 @@ def report_auswertung_mannschaft(request):
                         )
 
                         try:
-                            mannschaftergebnis.save()
+                            mannschaftergebnisgesamt.save()
                         except:
                             pass
 
-    # assert False
     for gen in gender:
         for liga in ligen:
-            ergebnisse = LigaturnenErgebnisseZwischenLiga.objects.filter(liga=liga, gender=gen).order_by('-ergebnis_summe')
+
+            h = 1
+            p.setFont('DejaVuSans-Bold', 24)
+            p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr))
+            h = h + 1
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe - (h * cm),
+                                "Ergebnisliste Ligaturnen, Mannschaft " + str(ligaTag.ligajahr))
+            h = h + 0.8
+            p.setFont('DejaVuSans-Bold', 14)
+            if gen == 'w':
+                gen_long = 'weiblich'
+            else:
+                gen_long = 'männlich'
+
+            p.drawCentredString(breite / 2, hoehe - (h * cm), liga.liga + "-Liga, " + gen_long)
+
+            ergebnisse = LigaturnenErgebnisseZwischenLiga.objects.filter(liga=liga,
+                                                                         gender=gen,
+                                                                         ligatag=1
+                                                                         ).order_by('-ergebnis_summe')
 
             if ergebnisse:
-                # assert False
-                h = 1
-                p.setFont('DejaVuSans-Bold', 18)
-                p.drawCentredString(breite / 2, hoehe - (h * cm), "Ergebnisliste Ligaturnen, Mannschaft " + str(ligaTag.ligajahr))
-                h = h + 0.8
-                p.setFont('DejaVuSans-Bold', 14)
-                if gen == 'w':
-                    gen_long = 'weiblich'
-                else:
-                    gen_long = 'männlich'
-
-                p.drawCentredString(breite / 2, hoehe - (h * cm), liga.liga + "-Liga, " + gen_long)
                 h = h + 1
 
                 p.setFont('DejaVuSans', 8)
 
                 p.setFillGray(0.75)
                 p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+                p.setFillGray(0.0)
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Mannschaftswertung 1. Wettkampftag')
 
+                h = h + 0.5
                 p.setFillGray(0.0)
                 p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Rang')
                 p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Mannschaft')
                 p.drawString(4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Verein')
-                #p.drawString(8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Sprung')
-                #p.drawString(9.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
-                #p.drawString(11.2 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
-                #p.drawString(12.8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
-                #p.drawString(14.4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
-                #p.drawString(16.0 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
-                p.drawString(17.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+                p.drawString(18.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
 
-                h = h + 0.5
+                h = h + 0.25
                 rang = 1
                 ergebnis_summe_vorheriger = 0
                 for ergebnis in ergebnisse:
@@ -750,21 +870,94 @@ def report_auswertung_mannschaft(request):
 
                     p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.mannschaft) + ". Mannschaft")
                     p.drawString(4.0 * cm, hoehe - (h * cm), str(ergebnis.verein))
-                    #p.drawString(8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_sprung_s))
-                    #p.drawString(9.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_mini_s))
-                    #p.drawString(11.2 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_reck_s))
-                    #p.drawString(12.8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_balken_s))
-                    #p.drawString(14.4 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_barren_s))
-                    #p.drawString(16.0 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_boden_s))
-                    p.drawString(17.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+                    p.drawString(18.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
                     ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
                     h = h + 0.5
                     rang = rang + 1
 
-                current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
-                p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
+                ergebnisse = LigaturnenErgebnisseZwischenLiga.objects.filter(liga=liga,
+                                                                             gender=gen,
+                                                                             ligatag=2
+                                                                             ).order_by('-ergebnis_summe')
 
-                p.showPage()  # Erzwingt eine neue Seite
+                if ergebnisse:
+                    h = h + 0.5
+
+                    p.setFont('DejaVuSans', 8)
+
+                    p.setFillGray(0.75)
+                    p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+                    p.setFillGray(0.0)
+                    p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Mannschaftswertung 2. Wettkampftag')
+
+                    h = h + 0.5
+                    p.setFillGray(0.0)
+                    p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Rang')
+                    p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Mannschaft')
+                    p.drawString(4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Verein')
+                    p.drawString(18.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+
+                    h = h + 0.25
+                    rang = 1
+                    ergebnis_summe_vorheriger = 0
+                    for ergebnis in ergebnisse:
+                        if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+                            rang = rang - 1
+                            p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+                            rang = rang + 1
+                        else:
+                            p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+
+                        p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.mannschaft) + ". Mannschaft")
+                        p.drawString(4.0 * cm, hoehe - (h * cm), str(ergebnis.verein))
+                        p.drawString(18.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+                        ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+                        h = h + 0.5
+                        rang = rang + 1
+
+                ergebnisse = LigaturnenErgebnisseZwischenLigaGesamt.objects.filter(liga=liga,
+                                                                                   gender=gen
+                                                                                   ).order_by('-ergebnis_summe')
+
+                if ergebnisse:
+                    h = h + 0.5
+
+                    p.setFont('DejaVuSans', 8)
+
+                    p.setFillGray(0.75)
+                    p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+                    p.setFillGray(0.0)
+                    p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamtergebnis')
+
+                    h = h + 0.5
+                    p.setFillGray(0.0)
+                    p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Rang')
+                    p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Mannschaft')
+                    p.drawString(4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Verein')
+                    p.drawString(18.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+
+                    h = h + 0.25
+                    rang = 1
+                    ergebnis_summe_vorheriger = 0
+                    for ergebnis in ergebnisse:
+                        if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+                            rang = rang - 1
+                            p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+                            rang = rang + 1
+                        else:
+                            p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+
+                        p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.mannschaft) + ". Mannschaft")
+                        p.drawString(4.0 * cm, hoehe - (h * cm), str(ergebnis.verein))
+                        p.drawString(18.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+                        ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+                        h = h + 0.5
+                        rang = rang + 1
+
+            current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
+            p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
+
+            p.showPage()  # Erzwingt eine neue Seite
 
     # Close the PDF object cleanly, and we're done.
     p.save()
@@ -779,10 +972,11 @@ def report_auswertung_mannschaft(request):
 # Area Auswertung Ligaturnen Einzelturnerinnen
 ##########################################################################
 @login_required
-@permission_required('ligaturnen.add_ligaturnenergebnissezwischeneinzel')
+@permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_auswertung_einzel(request):
     ligen = Ligen.objects.all()
     ligaTag = LigaTag.objects.get(id=1)
+    configuration = Konfiguration.objects.get(id=1)
 
     font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
     pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
@@ -805,10 +999,10 @@ def report_auswertung_einzel(request):
     for gen in gender:
 
         teilnehmer_group = Teilnehmer.objects.filter(teilnehmer_gender=gen).order_by('teilnehmer_name',
-                                                                                    'teilnehmer_vorname',
-                                                                                    'teilnehmer_verein',
-                                                                                    'teilnehmer_geburtsjahr',
-                                                                                    'teilnehmer_gender')
+                                                                                     'teilnehmer_vorname',
+                                                                                     'teilnehmer_verein',
+                                                                                     'teilnehmer_geburtsjahr',
+                                                                                     'teilnehmer_gender')
 
         teilnehmer_alias_1 = ""
         sprung_zwischen = 0
@@ -827,6 +1021,7 @@ def report_auswertung_einzel(request):
                                   f"{teilnehmer.teilnehmer_gender}")
 
             if teilnehmer_alias_2 == teilnehmer_alias_1:
+                print("Schritt 2")
                 try:
                     ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=teilnehmer.id)
                     if ergebnis:
@@ -838,8 +1033,9 @@ def report_auswertung_einzel(request):
                         boden_zwischen = ergebnis.ergebnis_boden_s + boden_zwischen
                         teilnehmer_alias_1 = teilnehmer_alias_2
                 except:
-                    pass
+                    logger.info("An exception occurred")
             else:
+                print("Schritt 1")
                 sprung_zwischen = 0
                 mini_zwischen = 0
                 reck_zwischen = 0
@@ -857,24 +1053,19 @@ def report_auswertung_einzel(request):
                         boden_zwischen = ergebnis.ergebnis_boden_s + boden_zwischen
                         teilnehmer_alias_1 = teilnehmer_alias_2
                 except:
-                    pass
+                    logger.info("An exception occurred")
 
             summe_zwischen = sprung_zwischen + mini_zwischen + reck_zwischen + balken_zwischen + barren_zwischen + boden_zwischen
-            if summe_zwischen >0:
+            if summe_zwischen > 0:
+                print("Schritt 3")
                 obj, created = LigaturnenErgebnisseZwischenEinzel.objects.update_or_create(
                     teilnehmer_name=teilnehmer.teilnehmer_name,
                     teilnehmer_vorname=teilnehmer.teilnehmer_vorname,
                     teilnehmer_geburtsjahr=teilnehmer.teilnehmer_geburtsjahr,
                     teilnehmer_gender=teilnehmer.teilnehmer_gender,
-                    teilnehmer_liga=teilnehmer.teilnehmer_liga_tag,
+                    teilnehmer_liga=teilnehmer.teilnehmer_liga,
                     teilnehmer_verein=teilnehmer.teilnehmer_verein,
-                    defaults={"teilnehmer_name": teilnehmer.teilnehmer_name,
-                              "teilnehmer_vorname": teilnehmer.teilnehmer_vorname,
-                              "teilnehmer_geburtsjahr": teilnehmer.teilnehmer_geburtsjahr,
-                              "teilnehmer_gender": teilnehmer.teilnehmer_gender,
-                              "teilnehmer_liga": teilnehmer.teilnehmer_liga,
-                              "teilnehmer_verein": teilnehmer.teilnehmer_verein,
-                              "ergebnis_sprung_s": sprung_zwischen,
+                    defaults={"ergebnis_sprung_s": sprung_zwischen,
                               "ergebnis_mini_s": mini_zwischen,
                               "ergebnis_reck_s": reck_zwischen,
                               "ergebnis_balken_s": balken_zwischen,
@@ -882,34 +1073,49 @@ def report_auswertung_einzel(request):
                               "ergebnis_boden_s": boden_zwischen,
                               "ergebnis_summe": summe_zwischen
                               }
-
-            )
-
+                )
+                print(obj)
+                print(created)
     for gen in gender:
-        if gen == "w":
-            gen_long = "weiblich"
-        else:
-            gen_long = "männlich"
-
         for liga in ligen:
 
-            ergebnisse = LigaturnenErgebnisseZwischenEinzel.objects.filter(
-                teilnehmer_gender=gen, teilnehmer_liga=liga
+            h = 1
+            p.setFont('DejaVuSans-Bold', 24)
+            p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr))
+            h = h + 1
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe - (h * cm), "Ergebnisliste Einzelwertung")
+            h = h + 0.8
+            p.setFont('DejaVuSans-Bold', 14)
+            if gen == 'w':
+                gen_long = 'weiblich'
+            else:
+                gen_long = 'männlich'
+
+            p.drawCentredString(breite / 2, hoehe - (h * cm), liga.liga + "-Liga, " + gen_long)
+
+            ergebnisse = LigaturnenErgebnisse.objects.filter(
+                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                ergebnis_teilnehmer__teilnehmer_liga=liga,
+                ergebnis_ligatag=1
             ).order_by('-ergebnis_summe')
 
             if ergebnisse:
-                h = 1
-                p.setFont('DejaVuSans-Bold', 18)
-                p.drawCentredString(breite / 2, hoehe - (h * cm), "Ergebnisliste Ligaturnen " + str(ligaTag.ligajahr))
-                h = h + 0.8
-                p.setFont('DejaVuSans-Bold', 14)
-                p.drawCentredString(breite / 2, hoehe - (h * cm), str(gen_long) + "; Liga: " + str(liga))
-                h = h + 1
 
                 p.setFont('DejaVuSans', 8)
 
+                h = h + 1
                 p.setFillGray(0.75)
                 p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+                p.setFillGray(0.0)
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Einzelauswertung 1. Wettkampftag')
+
+                p.setFont('DejaVuSans', 8)
+
+                h = h + 0.5
+
+                # p.setFillGray(0.75)
+                # p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
 
                 p.setFillGray(0.0)
                 p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Rang')
@@ -925,7 +1131,133 @@ def report_auswertung_einzel(request):
 
                 rang = 1
                 ergebnis_summe_vorheriger = 0
+                h = h + 0.3
+
+                for ergebnis in ergebnisse:
+
+                    if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+                        rang = rang - 1
+                        p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+                        rang = rang + 1
+                    else:
+                        p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+
+                    p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer.teilnehmer_name) + " " +
+                                 str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname))
+                    p.drawString(5.0 * cm, hoehe - (h * cm),
+                                 str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+                    p.drawString(8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_sprung_s))
+                    p.drawString(9.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_mini_s))
+                    p.drawString(11.2 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_reck_s))
+                    p.drawString(12.8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_balken_s))
+                    p.drawString(14.4 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_barren_s))
+                    p.drawString(16.0 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_boden_s))
+                    p.drawString(17.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+                    ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+
+                    h = h + 0.5
+                    rang = rang + 1
+
+            ergebnisse = LigaturnenErgebnisse.objects.filter(
+                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                ergebnis_teilnehmer__teilnehmer_liga=liga,
+                ergebnis_ligatag=2
+            ).order_by('-ergebnis_summe')
+
+            if ergebnisse:
+
+                p.setFont('DejaVuSans', 8)
+
+                h = h + 1
+                p.setFillGray(0.75)
+                p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+                p.setFillGray(0.0)
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Einzelauswertung 2. Wettkampftag')
+
+                p.setFont('DejaVuSans', 8)
+
                 h = h + 0.5
+
+                # p.setFillGray(0.75)
+                # p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+
+                p.setFillGray(0.0)
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Rang')
+                p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Teilnehmer/in')
+                p.drawString(5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Verein')
+                p.drawString(8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Sprung')
+                p.drawString(9.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
+                p.drawString(11.2 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
+                p.drawString(12.8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
+                p.drawString(14.4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
+                p.drawString(16.0 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
+                p.drawString(17.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+
+                rang = 1
+                ergebnis_summe_vorheriger = 0
+                h = h + 0.3
+
+                for ergebnis in ergebnisse:
+
+                    if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+                        rang = rang - 1
+                        p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+                        rang = rang + 1
+                    else:
+                        p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
+
+                    p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer.teilnehmer_name) + " " +
+                                 str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname))
+                    p.drawString(5.0 * cm, hoehe - (h * cm),
+                                 str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+                    p.drawString(8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_sprung_s))
+                    p.drawString(9.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_mini_s))
+                    p.drawString(11.2 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_reck_s))
+                    p.drawString(12.8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_balken_s))
+                    p.drawString(14.4 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_barren_s))
+                    p.drawString(16.0 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_boden_s))
+                    p.drawString(17.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+                    ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+
+                    h = h + 0.5
+                    rang = rang + 1
+
+            ergebnisse = LigaturnenErgebnisseZwischenEinzel.objects.filter(
+                teilnehmer_gender=gen,
+                teilnehmer_liga=liga).order_by('-ergebnis_summe')
+
+            if ergebnisse:
+                h = h + 1
+
+                p.setFont('DejaVuSans', 8)
+
+                p.setFillGray(0.75)
+                p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+                p.setFillGray(0.0)
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Einzelauswertung Gesamtergebnis')
+
+                p.setFont('DejaVuSans', 8)
+
+                h = h + 0.5
+
+                # p.setFillGray(0.75)
+                # p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+
+                p.setFillGray(0.0)
+                p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Rang')
+                p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Teilnehmer/in')
+                p.drawString(5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Verein')
+                p.drawString(8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Sprung')
+                p.drawString(9.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
+                p.drawString(11.2 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
+                p.drawString(12.8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
+                p.drawString(14.4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
+                p.drawString(16.0 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
+                p.drawString(17.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+
+                rang = 1
+                ergebnis_summe_vorheriger = 0
+                h = h + 0.3
                 for ergebnis in ergebnisse:
 
                     if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
@@ -954,7 +1286,7 @@ def report_auswertung_einzel(request):
                 current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
                 p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
 
-                p.showPage()  # Erzwingt eine neue Seite
+            p.showPage()  # Erzwingt eine neue Seite
 
     # Close the PDF object cleanly, and we're done.
     p.save()
@@ -962,11 +1294,11 @@ def report_auswertung_einzel(request):
     # FileResponse sets the Content-Disposition header so that browsers
     # present the option to save the file.
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=True, filename="Ergebnislisten_Ligaturnen_Einzel.pdf")
+    return FileResponse(buffer, as_attachment=False, filename="Ergebnislisten_Ligaturnen_Einzel.pdf")
 
 
 @login_required
-@permission_required('ligaturnen.add_ligaturnenergebnissezwischenliga')
+@permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_urkunde_mannschaft(request):
     ligen = Ligen.objects.all()
     vereine = Vereine.objects.all()
@@ -997,7 +1329,8 @@ def report_urkunde_mannschaft(request):
             gen_long = "männlich"
 
         for liga in ligen:
-            ergebnisse = LigaturnenErgebnisseZwischenLiga.objects.filter(liga=liga, gender=gen).order_by('-ergebnis_summe')
+            ergebnisse = LigaturnenErgebnisseZwischenLiga.objects.filter(liga=liga, gender=gen).order_by(
+                '-ergebnis_summe')
 
             if ergebnisse:
                 h = 1
@@ -1005,30 +1338,29 @@ def report_urkunde_mannschaft(request):
                 rang = 1
                 ergebnis_summe_vorheriger = 0
                 for ergebnis in ergebnisse:
-                    p.setFont('DejaVuSans-Bold', 24)
+                    p.setFont('DejaVuSans', 22)
+                    p.drawCentredString(breite / 2, hoehe_start - (18 * cm), str(ergebnis.liga) + "-Liga")
+                    p.setFont('DejaVuSans', 12)
+                    p.drawCentredString(breite / 2, hoehe_start - (18.6 * cm), gen_long)
+
+                    p.setFont('DejaVuSans', 18)
+                    p.drawCentredString(breite / 2, hoehe_start - (20 * cm), "Mit " + str(ergebnis.ergebnis_summe) +
+                                        " Punkten belegte")
+
+                    p.setFont('DejaVuSans', 18)
+                    p.drawCentredString(breite / 2, hoehe_start - (21 * cm),
+                                        "die " + str(ergebnis.mannschaft) + ". Mannschaft")
+
+                    p.setFont('DejaVuSans', 18)
+                    p.drawCentredString(breite / 2, hoehe_start - (22 * cm), str(ergebnis.verein.verein_name))
+
                     if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
                         rang = rang - 1
-                        p.drawCentredString(breite / 2, hoehe_start - (18 * cm), str(rang) + ". Platz; Liga "
-                                            + str(ergebnis.liga) + "; " + gen_long)
+                        p.drawCentredString(breite / 2, hoehe_start - (23 * cm), str(rang) + ". Platz")
                         rang = rang + 1
                     else:
-                        p.drawCentredString(breite / 2, hoehe_start - (18 * cm), str(rang) + ". Platz; Liga "
-                                            + str(ergebnis.liga) + "; " + gen_long)
+                        p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "den " + str(rang) + ". Platz.")
 
-                    p.setFont('DejaVuSans', 20)
-                    p.drawCentredString(breite / 2, hoehe_start - (19 * cm), str(ergebnis.mannschaft) + ". Mannschaft")
-
-                    p.setFont('DejaVuSans', 18)
-                    p.drawCentredString(breite / 2, hoehe_start - (20 * cm), str(ergebnis.verein.verein_name))
-
-                    p.drawCentredString(breite / 2, hoehe_start -  (21 * cm),
-                                        "erreichte eine Gesamtpunktzahl von:")
-
-                    p.setFont('DejaVuSans-Bold', 18)
-                    p.drawCentredString(breite / 2, hoehe_start - (22 * cm), str(ergebnis.ergebnis_summe))
-
-                    p.setFont('DejaVuSans', 18)
-                    p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "Punkten")
                     ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
                     h = h + 0.5
                     rang = rang + 1
@@ -1041,11 +1373,11 @@ def report_urkunde_mannschaft(request):
     # FileResponse sets the Content-Disposition header so that browsers
     # present the option to save the file.
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=True, filename="Urkunde_Mannschaft.pdf")
+    return FileResponse(buffer, as_attachment=False, filename="Urkunde_Mannschaft.pdf")
 
 
 @login_required
-@permission_required('ligaturnen.add_ligaturnenergebnissezwischeneinzel')
+@permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_urkunde_einzel(request):
     ligen = Ligen.objects.all()
     ligaTag = LigaTag.objects.get(id=1)
@@ -1088,16 +1420,16 @@ def report_urkunde_einzel(request):
                 ergebnis_summe_vorheriger = 0
                 h = h + 0.5
                 for ergebnis in ergebnisse:
-
                     p.setFont('DejaVuSans-Bold', 18)
                     p.drawCentredString(breite / 2, hoehe_start - (18 * cm),
                                         str(ergebnis.teilnehmer_name) + " " +
-                                 str(ergebnis.teilnehmer_vorname))
+                                        str(ergebnis.teilnehmer_vorname))
 
                     p.setFont('DejaVuSans', 18)
 
                     p.drawCentredString(breite / 2, hoehe_start - (19 * cm),
-                                        " *" + str(datetime.strptime(str(ergebnis.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
+                                        " *" + str(
+                                            datetime.strptime(str(ergebnis.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
                     p.drawCentredString(breite / 2, hoehe_start - (20 * cm),
                                         str(ergebnis.teilnehmer_verein.verein_name))
 
@@ -1108,10 +1440,10 @@ def report_urkunde_einzel(request):
                     p.drawCentredString(breite / 2, hoehe_start - (22 * cm), str(ergebnis.ergebnis_summe))
 
                     p.setFont('DejaVuSans', 18)
-                    p.drawCentredString(breite / 2, hoehe_start - (23 * cm),"Punkten")
+                    p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "Punkten")
 
                     p.setFont('DejaVuSans', 12)
-                    p.drawCentredString(breite / 2, hoehe_start - (24 * cm),"Einzelergebnisse:")
+                    p.drawCentredString(breite / 2, hoehe_start - (24 * cm), "Einzelergebnisse:")
 
                     p.setFont('DejaVuSans', 10)
                     p.drawString(5.0 * cm, hoehe_start - (25 * cm), 'Schwebebalken:')
@@ -1140,11 +1472,12 @@ def report_urkunde_einzel(request):
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="Urkunden_Einzel.pdf")
 
+
 ##########################################################################
 # Area Auswertung Vereine
 ##########################################################################
 @login_required
-@permission_required('ligaturnen.add_ligaturnenergebnissezwischenliga')
+@permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_auswertung_vereine(request):
     vereine = Vereine.objects.all()
     ligaTag = LigaTag.objects.get(id=1)
@@ -1163,7 +1496,6 @@ def report_auswertung_vereine(request):
 
     # Holen der Seitenabmessung
     breite, hoehe = A4
-
 
     for verein in vereine:
         ergebnisse = (LigaturnenErgebnisseZwischenEinzel.objects.filter(teilnehmer_verein=verein)
@@ -1201,7 +1533,8 @@ def report_auswertung_vereine(request):
         h = h + 0.5
 
         for ergebnis in ergebnisse:
-            p.drawString(0.5 * cm, hoehe - (h * cm), str(datetime.strptime(str(ergebnis.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
+            p.drawString(0.5 * cm, hoehe - (h * cm),
+                         str(datetime.strptime(str(ergebnis.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
             p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_gender))
             p.drawString(2.5 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_liga))
             p.drawString(3.5 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_name) + " " +
