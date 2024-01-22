@@ -13,7 +13,7 @@
             <div class="col-sm-2"></div>
             <div class="col-sm-2">
             </div>
-            <div class="col-sm-4"><h3 class="text-center">Ergebnis erfassen für {{ form.turnerin}}</h3></div>
+            <div class="col-sm-4"><h4 class="text-center">Ergebnis erfassen für Startnr.: {{ form.teilnehmer_id}}; {{ form.turnerin}}</h4></div>
             <div class="col-sm-2">
             </div>
             <div class="col-sm-2"></div>
@@ -82,11 +82,15 @@
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
               var inputField = document.getElementById('id_ergebnis_sprung_a');
+              var focusField = document.getElementById('id_ergebnis_sprung_b');
               if (inputField.value == 0.00) {
                   inputField.value = {{ form.sprung }}
+                  if (inputField.value == 0) {
+                    document.getElementById('id_ergebnis_sprung_a').classList.add('red-input');
+                  }
               }
               // Markiere den Initialwert des Eingabefelds
-              inputField.select();
+              focusField.select();
             });
         </script>
 
@@ -117,11 +121,15 @@
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
               var inputField = document.getElementById('id_ergebnis_mini_a');
+              var focusField = document.getElementById('id_ergebnis_mini_b');
               if (inputField.value == 0.00) {
                   inputField.value = {{ form.mini }}
+                  if (inputField.value == 0) {
+                    document.getElementById('id_ergebnis_mini_a').classList.add('red-input');
+                  }
               }
               // Markiere den Initialwert des Eingabefelds
-              inputField.select();
+              focusField.select();
             });
         </script>
 
@@ -152,11 +160,15 @@
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
               var inputField = document.getElementById('id_ergebnis_reck_a');
+              var focusField = document.getElementById('id_ergebnis_reck_b');
               if (inputField.value == 0.00) {
                   inputField.value = {{ form.reck }}
+                  if (inputField.value == 0) {
+                    document.getElementById('id_ergebnis_reck_a').classList.add('red-input');
+                  }
               }
               // Markiere den Initialwert des Eingabefelds
-              inputField.select();
+              focusField.select();
             });
         </script>
         {% endif %}
@@ -186,11 +198,15 @@
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
               var inputField = document.getElementById('id_ergebnis_balken_a');
+              var focusField = document.getElementById('id_ergebnis_balken_b');
               if (inputField.value == 0.00) {
                   inputField.value = {{ form.balken }}
+                  if (inputField.value == 0) {
+                    document.getElementById('id_ergebnis_balken_a').classList.add('red-input');
+                  }
               }
               // Markiere den Initialwert des Eingabefelds
-              inputField.select();
+              focusField.select();
             });
         </script>
 
@@ -221,11 +237,15 @@
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
               var inputField = document.getElementById('id_ergebnis_barren_a');
+              var focusField = document.getElementById('id_ergebnis_barren_b');
               if (inputField.value == 0.00) {
                   inputField.value = {{ form.barren }}
+                  if (inputField.value == 0) {
+                    document.getElementById('id_ergebnis_barren_a').classList.add('red-input');
+                  }
               }
               // Markiere den Initialwert des Eingabefelds
-              inputField.select();
+              focusField.select();
             });
         </script>
         {% endif %}
@@ -255,11 +275,15 @@
             document.addEventListener('DOMContentLoaded', function() {
               // Wähle das Eingabefeld aus
               var inputField = document.getElementById('id_ergebnis_boden_a');
+              var focusField = document.getElementById('id_ergebnis_boden_b');
               if (inputField.value == 0.00) {
                   inputField.value = {{ form.boden }}
+                  if (inputField.value == 0) {
+                    document.getElementById('id_ergebnis_boden_a').classList.add('red-input');
+                  }
               }
               // Markiere den Initialwert des Eingabefelds
-              inputField.select();
+              focusField.select();
             });
         </script>
         {% endif %}

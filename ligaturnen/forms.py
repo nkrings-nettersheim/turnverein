@@ -94,18 +94,17 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
-                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_sprung_b = forms.DecimalField(
         required=False,
-        initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
@@ -128,6 +127,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
@@ -150,6 +150,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
@@ -161,7 +162,6 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
-                'autofocus': 'autofocus',
             }
         ))
 
@@ -173,6 +173,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
@@ -195,12 +196,12 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_boden_a = forms.DecimalField(
         required=False,
-        initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
@@ -211,12 +212,12 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
 
     ergebnis_boden_b = forms.DecimalField(
         required=False,
-        initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 

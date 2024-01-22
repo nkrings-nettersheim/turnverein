@@ -40,6 +40,7 @@ urlpatterns = [
     #path('ergebnis_edit/<int:pk>/', views.ErgebnisUpdateView.as_view(), name='ergebnis_edit'),
     path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
+    path('ergebnisse_list/', views.ErgebnisseList.as_view(), name='ergebnisse_list'),
 
     path('auswertungeinzel', views.report_auswertung_einzel, name='auswertungeinzel'),
     path('urkundeeinzel', views.report_urkunde_einzel, name='urkundeeinzel'),
