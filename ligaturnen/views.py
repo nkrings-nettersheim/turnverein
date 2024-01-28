@@ -14,7 +14,7 @@ from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.urls import reverse_lazy
 from django.http import FileResponse
 from django.contrib.auth.decorators import login_required, permission_required
-
+from django.contrib.auth.models import Permission
 from reportlab.lib.enums import TA_CENTER
 
 from reportlab.lib.units import cm
@@ -65,7 +65,7 @@ def ligawettkampf(request):
     request.session['geraet'] = ""
     request.session['teilnehmer'] = ""
 
-    logger.info(f"User {request.user.id} hat die Startseite des Ligawettkampfs aufgerufen")
+    logger.debug(f"User {request.user.id} hat die Startseite des Ligawettkampfs aufgerufen")
     return render(request, 'ligaturnen/ligawettkampf.html', {'dashboard': dashboard})
 
 
@@ -97,7 +97,7 @@ class VereineDetailView(PermissionRequiredMixin, DetailView):
 class VereineUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "ligaturnen.change_vereine"
     model = Vereine
-    template_name = "ligaturnen/vereine_update.html"
+    template_name = "ligaturnen/vereine_edit.html"
     fields = '__all__'
     success_url = "/ligaturnen/vereine_list/"
 
@@ -133,7 +133,7 @@ class LigenDetailView(PermissionRequiredMixin, DetailView):
 class LigenUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "ligaturnen.change_ligen"
     model = LigaTag
-    template_name = "ligaturnen/ligen_update.html"
+    template_name = "ligaturnen/ligen_edit.html"
     fields = '__all__'
     success_url = "/ligaturnen/ligen_list/"
 
@@ -172,7 +172,7 @@ class TeilnehmerDetailView(PermissionRequiredMixin, DetailView):
 class TeilnehmerUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "ligaturnen.change_teilnehmer"
     model = Teilnehmer
-    template_name = "ligaturnen/teilnehmer_update.html"
+    template_name = "ligaturnen/teilnehmer_edit.html"
     # fields = '__all__'
     form_class = TeilnehmerErfassenForm
     success_url = reverse_lazy("ligaturnen:teilnehmer_list")
@@ -243,7 +243,7 @@ def handle_uploaded_file(file):
 class LigaTagUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "ligaturnen.change_ligatag"
     model = LigaTag
-    template_name = "ligaturnen/ligatag_update.html"
+    template_name = "ligaturnen/ligatag_edit.html"
     fields = '__all__'
     success_url = "/ligaturnen/ligawettkampf/"
 
@@ -255,7 +255,7 @@ class LigaTagUpdateView(PermissionRequiredMixin, UpdateView):
 def download_document(request):
     if request.method == 'GET':
         file_name = request.GET.get('file_name')
-        document_path = settings.MEDIA_ROOT + '/' + file_name
+        document_path = settings.MEDIA_ROOT + '/' + str(file_name)
         response = FileResponse(open(document_path, 'rb'), as_attachment=True)
         return response
 
@@ -432,8 +432,6 @@ def report_geraetelisten(request):
 @login_required
 @permission_required('ligaturnen.view_ligaturnenergebnisse')
 def ergebnis_erfassen_suche(request):
-    # request.session['geraet'] != ""
-    # request.session['teilnehmer'] = ""
 
     if request.method == "POST":
         startnummer = request.POST['startnummer']
@@ -490,18 +488,11 @@ def add_ergebnis(request):
             item = form.save(commit=False)
             item.save()
             request.session['teilnehmer'] = str(item.id)
-            # geraet = request.GET.get('geraet')
-            # geraet = request.session['geraet']
-            # return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + str(item.id))
             return redirect('/ligaturnen/ergebnis_erfassen_suche/')
         else:
             for field in form:
                 print("Field Error:", field.name, field.errors)
     else:
-        # startnummer = request.GET.get('start')
-        # geraete_id = request.GET.get('geraet')
-        # startnummer = request.session['start']
-        # geraete_id = request.session['geraet']
         teilnehmer = Teilnehmer.objects.get(id=request.session['startnummer'])
         ligatag = LigaTag.objects.get(id=1)
 
@@ -635,6 +626,7 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_sprung_s')[:3]
                             if erg_sprung:
                                 for erg in erg_sprung:
+                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Sprung: {erg.ergebnis_sprung_s}")
                                     erg_zwischen.append(erg.ergebnis_sprung_s)
                         except:
                             pass
@@ -642,14 +634,15 @@ def report_auswertung_mannschaft(request):
                         try:
                             erg_mini = LigaturnenErgebnisse.objects.filter(
                                 ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
                                 ergebnis_teilnehmer__teilnehmer_verein=verein,
                                 ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
                                 ergebnis_teilnehmer__teilnehmer_ak=0,
-                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                                ergebnis_ligatag = ligatag
                             ).order_by('-ergebnis_mini_s')[:3]
                             if erg_mini:
                                 for erg in erg_mini:
+                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Mini: {erg.ergebnis_mini_s}")
                                     erg_zwischen.append(erg.ergebnis_mini_s)
                         except:
                             pass
@@ -657,14 +650,15 @@ def report_auswertung_mannschaft(request):
                         try:
                             erg_reck = LigaturnenErgebnisse.objects.filter(
                                 ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
                                 ergebnis_teilnehmer__teilnehmer_verein=verein,
                                 ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
                                 ergebnis_teilnehmer__teilnehmer_ak=0,
-                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                                ergebnis_ligatag = ligatag
                             ).order_by('-ergebnis_reck_s')[:3]
                             if erg_reck:
                                 for erg in erg_reck:
+                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Reck: {erg.ergebnis_reck_s}")
                                     erg_zwischen.append(erg.ergebnis_reck_s)
                         except:
                             pass
@@ -672,14 +666,15 @@ def report_auswertung_mannschaft(request):
                         try:
                             erg_barren = LigaturnenErgebnisse.objects.filter(
                                 ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
                                 ergebnis_teilnehmer__teilnehmer_verein=verein,
                                 ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
                                 ergebnis_teilnehmer__teilnehmer_ak=0,
-                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                                ergebnis_ligatag = ligatag
                             ).order_by('-ergebnis_barren_s')[:3]
                             if erg_barren:
                                 for erg in erg_barren:
+                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Barren: {erg.ergebnis_barren_s}")
                                     erg_zwischen.append(erg.ergebnis_barren_s)
                         except:
                             pass
@@ -687,34 +682,38 @@ def report_auswertung_mannschaft(request):
                         try:
                             erg_balken = LigaturnenErgebnisse.objects.filter(
                                 ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
                                 ergebnis_teilnehmer__teilnehmer_verein=verein,
                                 ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
                                 ergebnis_teilnehmer__teilnehmer_ak=0,
-                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                                ergebnis_ligatag = ligatag
                             ).order_by('-ergebnis_balken_s')[:3]
                             if erg_balken:
                                 for erg in erg_balken:
+                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Balken: {erg.ergebnis_balken_s}")
                                     erg_zwischen.append(erg.ergebnis_balken_s)
                         except:
                             pass
                         try:
                             erg_boden = LigaturnenErgebnisse.objects.filter(
                                 ergebnis_teilnehmer__teilnehmer_liga=str(liga.liga),
-                                ergebnis_teilnehmer__teilnehmer_ligatag=ligatag,
                                 ergebnis_teilnehmer__teilnehmer_verein=verein,
                                 ergebnis_teilnehmer__teilnehmer_mannschaft=mannschaft,
                                 ergebnis_teilnehmer__teilnehmer_ak=0,
-                                ergebnis_teilnehmer__teilnehmer_gender=gen
+                                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                                ergebnis_ligatag = ligatag
                             ).order_by('-ergebnis_boden_s')[:3]
                             if erg_boden:
                                 for erg in erg_boden:
+                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis boden: {erg.ergebnis_boden_s}")
                                     erg_zwischen.append(erg.ergebnis_boden_s)
                         except:
                             pass
 
                         # sortieren des List Objekts:
                         erg_zwischen.sort(reverse=True)
+                        #if erg_zwischen:
+                            #print(f"Ergebnis sortiert: {erg_zwischen}")
 
                         if len(erg_zwischen) >= 12:
                             anzahl = 12
@@ -724,21 +723,22 @@ def report_auswertung_mannschaft(request):
                         for i in range(anzahl):
                             erg_summe = erg_summe + erg_zwischen[i]
 
-                        if erg_summe > 0:
 
+                        if erg_summe > 0:
+                            print(f"Ergebnis Summe: {erg_summe} Ligatag: {ligatag}")
                             mannschaftergebnis = LigaturnenErgebnisseZwischenLiga(
                                 liga=liga,
-                                ligatag=ligatag,
                                 verein=verein,
                                 mannschaft=mannschaft,
                                 gender=gen,
+                                ligatag=ligatag,
                                 ergebnis_summe=erg_summe
                             )
 
                             try:
                                 mannschaftergebnis.save()
                             except:
-                                pass
+                                print(f"Mannschftsergebnis konnte nicht angelegt werden")
 
     for liga in ligen:
         for verein in vereine:
@@ -755,11 +755,13 @@ def report_auswertung_mannschaft(request):
                         )
                         if ergebnis:
                             for erg in ergebnis:
+                                print(f"{erg.ergebnis_summe}")
                                 erg_summe = erg_summe + erg.ergebnis_summe
 
                     except:
                         print("There was an error inside save")
 
+                    #print(f"ERgebnis Gesamt Summe: {erg_summe}")
                     if erg_summe > 0:
                         mannschaftergebnisgesamt = LigaturnenErgebnisseZwischenLigaGesamt(
                             liga=liga,
@@ -912,7 +914,7 @@ def report_auswertung_mannschaft(request):
                     hilfsrang = 0
                     rang = 1
                     ergebnis_summe_vorheriger = 0
-                    for ergebnis in ergebnisse:
+                    for ergebnis in ergebnisse_gesamt:
                         if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
                             hilfsrang = hilfsrang + 1
                             rang = rang - 1
@@ -1705,7 +1707,7 @@ def vereine_handle_uploaded_file(file):
 
 @login_required
 @permission_required('ligaturnen.add_vereine')
-def delete_tables_ligaturnen(request):
+def ligaturnen_tables_delete(request):
     if request.method == 'POST':
         count_ergebnisse = LigaturnenErgebnisse.objects.all().delete()
         count_ergebnisse_zwischen_einzel = LigaturnenErgebnisseZwischenLiga.objects.all().delete()
