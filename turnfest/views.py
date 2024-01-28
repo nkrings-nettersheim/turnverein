@@ -95,7 +95,7 @@ class VereineDetailView(PermissionRequiredMixin, DetailView):
 class VereineUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "turnfest.change_vereine"
     model = Vereine
-    template_name = "turnfest/vereine_update.html"
+    template_name = "turnfest/vereine_edit.html"
     fields = '__all__'
     success_url = "/turnfest/vereine_list/"
 
@@ -153,7 +153,7 @@ class TeilnehmerDetailView(PermissionRequiredMixin, DetailView):
 class TeilnehmerUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "turnfest.change_teilnehmer"
     model = Teilnehmer
-    template_name = "turnfest/teilnehmer_update.html"
+    template_name = "turnfest/teilnehmer_edit.html"
     # fields = '__all__'
     form_class = TeilnehmerErfassenForm
     success_url = reverse_lazy("turnfest:teilnehmer_list")

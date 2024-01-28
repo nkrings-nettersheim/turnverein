@@ -135,7 +135,7 @@ class LigaturnenErgebnisseZwischenLiga(models.Model):
     mannschaft = models.IntegerField(null=True, default=1, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER, default='w')
     ligatag = models.CharField(max_length=1, default=1, null=True)
-    ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_summe = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.liga) + " " + str(self.verein) + " " + str(self.mannschaft)
@@ -150,7 +150,7 @@ class LigaturnenErgebnisseZwischenLigaGesamt(models.Model):
     verein = models.ForeignKey(Vereine, on_delete=models.PROTECT, null=True)
     mannschaft = models.IntegerField(null=True, default=1, blank=True)
     gender = models.CharField(max_length=1, choices=GENDER, default='w')
-    ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_summe = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.liga) + " " + str(self.verein) + " " + str(self.mannschaft)
@@ -174,7 +174,7 @@ class LigaturnenErgebnisseZwischenEinzel(models.Model):
     ergebnis_balken_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_barren_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
     ergebnis_boden_s = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
-    ergebnis_summe = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    ergebnis_summe = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     def __str__(self):
         return str(self.teilnehmer_name) + " " + str(self.teilnehmer_vorname)
