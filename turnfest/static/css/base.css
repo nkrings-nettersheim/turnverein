@@ -5,3 +5,7 @@
 .container-fluid {
     padding-bottom: 150px;
 }
+
+.red-input {
+    border: 1px solid red;
+}

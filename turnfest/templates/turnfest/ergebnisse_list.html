@@ -1,0 +1,73 @@
+{% extends "base_bezirksturnfest.html" %}
+
+{% load static %}
+
+{% block title %}
+    Turnverein - Ergebnisse
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4"><h3 class="text-center">Ergebnisse</h3></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+    </div>
+    <p></p>
+
+    <table class="table table-hover" id="ergebnisse_table">
+    <thead>
+      <tr>
+          <th class="col-sm-1 text-center">Verein</th>
+          <th class="col-sm-1">Name</th>
+          <th class="col-sm-1 text-center">Sprung</th>
+          <th class="col-sm-1 text-center">Minitr.</th>
+          <th class="col-sm-1 text-center">Reck/Stuf.</th>
+          <th class="col-sm-1 text-center">Balken</th>
+          <th class="col-sm-1 text-center">Barren</th>
+          <th class="col-sm-1 text-center">Boden</th>
+          <th class="col-sm-1 text-center">Summe</th>
+      </tr>
+    </thead>
+          <tbody>
+        {% for ergebnis in object_list %}
+        <tr>
+            <td class="text-center">{{ ergebnis.ergebnis_teilnehmer.teilnehmer_verein }}</td>
+            <td>{{ ergebnis.ergebnis_teilnehmer.id }} {{ ergebnis.ergebnis_teilnehmer.teilnehmer_vorname }}
+                {{ ergebnis.ergebnis_teilnehmer.teilnehmer_name }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_sprung_s }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_mini_s }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_reck_s }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_balken_s }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_barren_s }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_boden_s }}</td>
+            <td class="text-center">{{ ergebnis.ergebnis_summe }}</td>
+        </tr>
+
+        {% empty %}
+        <li>Noch keine vorhanden</li>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+<script src="{% static 'js/fancyTable.min.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$("#ergebnisse_table").fancyTable({
+			sortColumn: 0,
+			sortOrder: 'descending',    // 'desc', 'descending', 'asc', 'ascending', -1 (descending) and 1 (ascending)
+			pagination: true,
+			perPage:20,
+			globalSearch:true,
+			inputPlaceholder: "Suche..."
+
+		});
+	});
+</script>
+{% endblock %}

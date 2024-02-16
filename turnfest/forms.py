@@ -1,7 +1,8 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit
-from .models import BezirksturnfestErgebnisse, Vereine, Teilnehmer
+from .models import BezirksturnfestErgebnisse, Vereine, Teilnehmer, Geraete
 
 
 class UploadFileForm(forms.Form):
@@ -18,9 +19,15 @@ class ErgebnisTeilnehmerSuchen(forms.Form):
         required=True
     )
 
+    geraet = forms.ModelChoiceField(queryset=Geraete.objects.all(), label="", widget=forms.Select(
+        attrs={
+            'class': 'form-control'
+        }
+    ))
 
 class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
     ergebnis_sprung_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
@@ -32,16 +39,19 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_sprung_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_mini_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
@@ -52,16 +62,19 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_mini_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_reck_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
@@ -72,16 +85,19 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_reck_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_balken_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
@@ -92,16 +108,19 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_balken_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_barren_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
@@ -112,16 +131,19 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_barren_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
     ergebnis_boden_a = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
@@ -132,12 +154,14 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         ))
 
     ergebnis_boden_b = forms.DecimalField(
+        required=False,
         initial=0.00,
         max_value=10,
         min_value=0,
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus',
             }
         ))
 
@@ -210,6 +234,61 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
                 'class': 'form-control',
             }
         ))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        ergebnis_sprung_a = cleaned_data.get('ergebnis_sprung_a')
+        ergebnis_sprung_s = cleaned_data.get('ergebnis_sprung_s')
+        ergebnis_reck_a = cleaned_data.get('ergebnis_reck_a')
+        ergebnis_reck_s = cleaned_data.get('ergebnis_reck_s')
+        ergebnis_mini_a = cleaned_data.get('ergebnis_mini_a')
+        ergebnis_mini_s = cleaned_data.get('ergebnis_mini_s')
+        ergebnis_balken_a = cleaned_data.get('ergebnis_balken_a')
+        ergebnis_balken_s = cleaned_data.get('ergebnis_balken_s')
+        ergebnis_barren_a = cleaned_data.get('ergebnis_barren_a')
+        ergebnis_barren_s = cleaned_data.get('ergebnis_barren_s')
+        ergebnis_boden_a = cleaned_data.get('ergebnis_boden_a')
+        ergebnis_boden_s = cleaned_data.get('ergebnis_boden_s')
+
+        anzahl_geraete = 0
+        if ergebnis_sprung_s > 0.00:
+            anzahl_geraete = anzahl_geraete + 1
+        else:
+            if ergebnis_sprung_a:
+                anzahl_geraete = anzahl_geraete + 1
+
+        if ergebnis_reck_s > 0.00:
+            anzahl_geraete = anzahl_geraete + 1
+        else:
+            if ergebnis_reck_a:
+                anzahl_geraete = anzahl_geraete + 1
+
+        if ergebnis_mini_s > 0:
+            anzahl_geraete = anzahl_geraete + 1
+        else:
+            if ergebnis_mini_a:
+                anzahl_geraete = anzahl_geraete + 1
+
+        if ergebnis_balken_s > 0:
+            anzahl_geraete = anzahl_geraete + 1
+        else:
+            if ergebnis_balken_a:
+                anzahl_geraete = anzahl_geraete + 1
+
+        if ergebnis_barren_s > 0:
+            anzahl_geraete = anzahl_geraete + 1
+        else:
+            if ergebnis_barren_a:
+                anzahl_geraete = anzahl_geraete + 1
+
+        if ergebnis_boden_s > 0:
+            anzahl_geraete = anzahl_geraete + 1
+        else:
+            if ergebnis_boden_a:
+                anzahl_geraete = anzahl_geraete + 1
+
+        if anzahl_geraete > 4:
+            raise ValidationError("Es wurden Ergebnisse für mehr als 4 Geräte erfasst! Dat kan net sin!")
 
     class Meta:
         model = BezirksturnfestErgebnisse

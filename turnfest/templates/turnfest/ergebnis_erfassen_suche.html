@@ -17,26 +17,135 @@
             <div class="col-sm-2"></div>
             <div class="col-sm-2"></div>
     </div>
+        {% if form.startnummerfalse == True %}
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-6"><p class="text-center text-danger">Die eingegebene Startnummer wurde nicht gefunden</p></div>
+            <div class="col-sm-1"></div>
+            <div class="col-sm-2"></div>
+    </div>
+    {% endif %}
     <p></p>
 
     <form action="{% url 'turnfest:ergebnis_erfassen_suche' %}" method="post">
         {% csrf_token %}
 
-        <div class="row">
-            <div class="col-sm-2"></div>
-           <div class="col-sm-2">
+<div class="row mr-2">
+           <div class="col-sm-3"></div>
+           <div class="col-sm-2 text-center">
                 <label for="{{ form.startnummer.id_for_label }}" class="control-label">Startnummer:</label>
            </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2 mb-3">
                     {{ form.startnummer }}
                     {{ form.startnummer.errors }}
             </div>
-           <div class="col-sm-3"><button type="submit" class="btn btn-secondary btn-sm">suchen</div>
-           <div class="col-sm-2"></div>
+           <div class="col-sm-3"></div>
+        </div>
+        <div class="row">
+           <div class="col-sm-3"></div>
+           <div class="col-sm-2 text-center">
+                <label for="{{ form.geraet.id_for_label }}" class="control-label">Gerät:</label>
+           </div>
+            <div class="col-sm-2 mb-3">
+                    {{ form.geraet }}
+                    {{ form.geraet.errors }}
+            </div>
+           <div class="col-sm-3"></div>
         </div>
 
+        <div class="row">
+           <div class="col-sm-3"></div>
+           <div class="col-sm-2"></div>
+           <div class="col-sm-2"><button type="submit" class="btn btn-secondary btn-sm">suchen</button></div>
+           <div class="col-sm-3"></div>
+        </div>
 
     </form>
-</div>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+    <div class="row">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-4 text-center">Zuletzt erfasstes Ergebnis:</div>
+        <div class="col-sm-4"></div>
+    </div>
 
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Startnr.:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_teilnehmer.id }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Turner/in:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_teilnehmer }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Sprung:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_sprung_s }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Reck/Stufenb.:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_reck_s }}</div>
+        <div class="col"></div>
+    </div>
+        <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Minitramp.:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_mini_s }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Barren:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_barren_s }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Balken:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_balken_s }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Boden:</div>
+        <div class="col-4">{{ ergebnis.ergebnis_boden_s }}</div>
+        <div class="col"></div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-4 text-end">Gesamt:</div>
+        <div class="col-4 mark">{{ ergebnis.ergebnis_summe }}</div>
+        <div class="col"></div>
+    </div>
+
+</div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wähle das Auswahlmenü aus
+      const selectField = document.getElementById('id_geraet');
+
+      // Setze den gewünschten Wert als ausgewählt (selected)
+      const desiredValue = '{{ form.geraet_option}}';
+
+      // Iteriere über die Optionen des Auswahlmenüs
+      for (let i = 0; i < selectField.options.length; i++) {
+        // Vergleiche den Wert jeder Option mit dem gewünschten Wert
+        if (selectField.options[i].value === desiredValue) {
+          // Setze die ausgewählte Option
+          selectField.options[i].selected = true;
+          // Breche die Schleife ab, da der Wert gefunden wurde
+          break;
+        }
+      }
+    });
+  </script>
 {% endblock %}
