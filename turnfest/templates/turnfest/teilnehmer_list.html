@@ -19,6 +19,17 @@
             </div>
             <div class="col-sm-2"></div>
     </div>
+         <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4"></div>
+            <div class="col-sm-2">
+                {% if request.session.count_positiv_turnfest %}
+                Neue Datensätze: {{ request.session.count_positiv_turnfest }} <br>doppelte Datensätze: {{request.session.count_negativ_turnfest}}
+                {% endif %}
+            </div>
+            <div class="col-sm-2"></div>
+    </div>
     <p></p>
 
     <table class="table table-hover">

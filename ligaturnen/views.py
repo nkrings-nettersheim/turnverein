@@ -205,9 +205,10 @@ def teilnehmer_upload(request):
 def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file)
-    # Iteriere durch die Zeilen und speichere die Daten in der Datenbank
+
     count_positiv = 0
     count_negativ = 0
+    # Iteriere durch die Zeilen und speichere die Daten in der Datenbank
     for index, row in df.iterrows():
         Teilnehmer_neu = Teilnehmer(teilnehmer_liga_tag=row['Liga_Tag'],
                                     teilnehmer_name=row['Nachname'],
@@ -231,7 +232,7 @@ def handle_uploaded_file(file):
             count_positiv = count_positiv + 1
         except:
             count_negativ = count_negativ + 1
-            pass
+
 
     countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ}
     return countdict
@@ -445,10 +446,8 @@ def ergebnis_erfassen_suche(request):
             teilnehmer = Teilnehmer.objects.get(id=startnummer, teilnehmer_liga_tag=ligatag.ligatag)
             try:
                 ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
-                # return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/?geraet=' + str(geraete_id) + "&ligatag=" + str(ligatag))
                 return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/')
             except:
-                # return redirect("/ligaturnen/add/ergebnis" + "/?start=" + startnummer + "&geraet=" + str(geraete_id) + "&ligatag=" + str(ligatag))
                 return redirect("/ligaturnen/add/ergebnis" + "/")
 
         except:
@@ -483,7 +482,6 @@ def ergebnis_erfassen_suche(request):
 def add_ergebnis(request):
     if request.method == "POST":
         form = ErgebnisTeilnehmererfassenForm(request.POST)
-        # assert False
         if form.is_valid():
             item = form.save(commit=False)
             item.save()
@@ -529,22 +527,13 @@ def edit_ergebnis(request, id=None):
     if item.ergebnis_boden_s > 0:
         anzahl_geraete = anzahl_geraete + 1
 
-    # print(anzahl_geraete)
-
     form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
 
     # if anzahl_geraete < 5:
     if form.is_valid():
         form.save()
-        # geraet = request.GET.get('geraet')
-        # geraet = request.session['geraet']
         request.session['teilnehmer'] = id
-        # print(request.session['teilnehmer'] + "; " + request.session['geraet'])
-        # assert False
-        # return redirect('/ligaturnen/ergebnis_erfassen_suche/?geraet=' + geraet + "&teilnehmer=" + id)
         return redirect('/ligaturnen/ergebnis_erfassen_suche/')
-    # else:
-    # return redirect('/ligaturnen/ergebnis_erfassen_suche/')
 
     ligatag = LigaTag.objects.get(id=1)
     form.id = item.id
@@ -556,10 +545,8 @@ def edit_ergebnis(request, id=None):
     form.balken = item.ergebnis_teilnehmer.teilnehmer_balken
     form.barren = item.ergebnis_teilnehmer.teilnehmer_barren
     form.boden = item.ergebnis_teilnehmer.teilnehmer_boden
-    # form.geraet = request.GET.get('geraet')
     form.geraet = request.session['geraet']
     form.ligatag = ligatag
-    # assert False
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
 
 
