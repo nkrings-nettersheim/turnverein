@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from datetime import datetime
 
 from django.conf import settings
+from django.db import connection
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView
@@ -132,7 +133,7 @@ class LigenDetailView(PermissionRequiredMixin, DetailView):
 
 class LigenUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = "ligaturnen.change_ligen"
-    model = LigaTag
+    model = Ligen
     template_name = "ligaturnen/ligen_edit.html"
     fields = '__all__'
     success_url = "/ligaturnen/ligen_list/"
@@ -196,8 +197,14 @@ def teilnehmer_upload(request):
             request.session['count_positiv'] = str(countdict["count_positiv"])
             request.session['count_negativ'] = str(countdict["count_negativ"])
             logger.info(f"User {request.user.id} hat eine neue Teilnehmerliste hochgeladen")
+            if countdict["name_fault"]:
+                request.session['name_fault'] = str(countdict["name_fault"])
+                form = UploadFileForm()
+                return render(request, 'ligaturnen/teilnehmer_upload.html', {'form': form})
+
             return redirect('/ligaturnen/teilnehmer_list/')
     else:
+        request.session['name_fault'] = ""
         form = UploadFileForm()
     return render(request, 'ligaturnen/teilnehmer_upload.html', {'form': form})
 
@@ -206,35 +213,56 @@ def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file)
 
+    name_fault = ""
     count_positiv = 0
     count_negativ = 0
     # Iteriere durch die Zeilen und speichere die Daten in der Datenbank
     for index, row in df.iterrows():
-        Teilnehmer_neu = Teilnehmer(teilnehmer_liga_tag=row['Liga_Tag'],
-                                    teilnehmer_name=row['Nachname'],
-                                    teilnehmer_vorname=row['Vorname'],
-                                    teilnehmer_gender=row['Geschlecht'],
-                                    teilnehmer_geburtsjahr=row['Geburtsjahr'],
-                                    teilnehmer_verein_id=row['Verein'],
-                                    teilnehmer_anwesend="True",
-                                    teilnehmer_liga=row['Liga'],
-                                    teilnehmer_mannschaft=row['Mannschaft'],
-                                    teilnehmer_ak=row['ak'],
-                                    teilnehmer_sprung=row['Sprung'],
-                                    teilnehmer_mini=row['Minitrampolin'],
-                                    teilnehmer_reck_stufenbarren=row['Reck_Stufenbarren'],
-                                    teilnehmer_balken=row['Schwebebalken'],
-                                    teilnehmer_barren=row['Barren'],
-                                    teilnehmer_boden=row['Boden'],
-                                    )
-        try:
-            Teilnehmer_neu.save()
-            count_positiv = count_positiv + 1
-        except:
-            count_negativ = count_negativ + 1
+        counter_geraet = 0
+        name_fault = ''
 
+        if row['Sprung'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Minitrampolin'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Reck_Stufenbarren'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Schwebebalken'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Barren'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Boden'] > 0:
+            counter_geraet = counter_geraet + 1
 
-    countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ}
+        if counter_geraet <=4 :
+            Teilnehmer_neu = Teilnehmer(teilnehmer_liga_tag=row['Liga_Tag'],
+                                        teilnehmer_name=row['Nachname'],
+                                        teilnehmer_vorname=row['Vorname'],
+                                        teilnehmer_gender=row['Geschlecht'],
+                                        teilnehmer_geburtsjahr=row['Geburtsjahr'],
+                                        teilnehmer_verein_id=row['Verein'],
+                                        teilnehmer_anwesend="True",
+                                        teilnehmer_liga=row['Liga'],
+                                        teilnehmer_mannschaft=row['Mannschaft'],
+                                        teilnehmer_ak=row['ak'],
+                                        teilnehmer_sprung=row['Sprung'],
+                                        teilnehmer_mini=row['Minitrampolin'],
+                                        teilnehmer_reck_stufenbarren=row['Reck_Stufenbarren'],
+                                        teilnehmer_balken=row['Schwebebalken'],
+                                        teilnehmer_barren=row['Barren'],
+                                        teilnehmer_boden=row['Boden'],
+                                        )
+            try:
+                Teilnehmer_neu.save()
+                count_positiv = count_positiv + 1
+            except:
+                count_negativ = count_negativ + 1
+        else:
+            name_fault = row['Nachname'] + " "+ row['Vorname']
+            countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ, "name_fault": name_fault}
+            return countdict
+
+    countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ, "name_fault": name_fault}
     return countdict
 
 
@@ -264,7 +292,7 @@ def download_document(request):
 
 
 ##########################################################################
-# Area Geräteliste erzeugen
+# Area Geräteliste und Mannschaftsübersicht erzeugen
 ##########################################################################
 @login_required
 @permission_required('ligaturnen.add_teilnehmer')
@@ -426,6 +454,105 @@ def report_geraetelisten(request):
 
     return response
 
+
+@login_required
+@permission_required('ligaturnen.add_teilnehmer')
+def report_meldungen(request):
+    # Definieren Sie die gewünschte Schriftart und laden Sie sie
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans-Bold.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", font_path))
+
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer, pagesize=A4)
+
+    # Holen der Seitenabmessung
+    breite, hoehe = A4
+
+    configuration = Konfiguration.objects.get(id=1)
+    ligen = Ligen.objects.all()
+    vereine = Vereine.objects.all()
+    ligaTag = LigaTag.objects.get(id=1)
+    mannschaften = [1, 2, 3]
+
+    for verein in vereine:
+        h = 1
+        p.setFont('DejaVuSans-Bold', 18)
+        p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr) + " Meldungen" + " Ligatag: " + str(ligaTag))
+        h = h + 0.2
+
+        p.setFont('DejaVuSans-Bold', 11)
+        p.drawCentredString(breite / 2, hoehe - (h * cm),
+            "____________________________________________________________________________________________________")
+        h = h + 0.7
+
+        p.setFont('DejaVuSans-Bold', 14)
+        p.drawCentredString(breite / 2, hoehe - (h * cm), verein.verein_name_kurz)
+
+        for liga in ligen:
+            h = h + 0.5
+            p.setFillColorRGB(0, 0, 0)  # choose your font colour
+            p.setFont('DejaVuSans-Bold', 12)
+            p.drawCentredString(breite / 2, hoehe - (h * cm), str(liga) + "-Liga")
+
+            for mannschaft in mannschaften:
+                meldungen = Teilnehmer.objects.filter(teilnehmer_verein=verein,
+                                                      teilnehmer_liga=liga,
+                                                      teilnehmer_mannschaft=mannschaft,
+                                                      teilnehmer_ak=False,
+                                                      teilnehmer_anwesend=True,
+                                                      teilnehmer_liga_tag=ligaTag).order_by('teilnehmer_name')
+
+                if meldungen:
+                    h = h + 0.5
+                    p.setFillColorRGB(0, 0, 0)  # choose your font colour
+                    p.setFont('DejaVuSans', 10)
+                    p.drawCentredString(breite / 2, hoehe - (h * cm), str(mannschaft) + ". Mannschaft")
+
+                    h = h + 0.5
+                    p.drawString(6 * cm, hoehe - (h * cm), 'Startnr.')
+                    p.drawString(8 * cm, hoehe - (h * cm),'Turnerin/Turner')
+                    p.drawString(12 * cm, hoehe - (h * cm), 'Jahrgang')
+                    p.drawString(15 * cm, hoehe - (h * cm), 'Geschlecht')
+                    h = h + 0.5
+                    z = 1
+
+                    for meldung in meldungen:
+                        if meldungen.count() > 6:
+                            p.setFillColorRGB(1, 0.2, 0.33)  # choose your font colour
+                        p.setFont('DejaVuSans', 10)
+                        p.drawString(6 * cm, hoehe - (h * cm), str(meldung.id))
+                        p.drawString(8 * cm, hoehe - (h * cm), str(meldung.teilnehmer_vorname) + " " + str(meldung.teilnehmer_name))
+                        p.drawString(12 * cm, hoehe - (h * cm), str(
+                                            datetime.strptime(str(meldung.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
+                        p.drawString(15 * cm, hoehe - (h * cm), str(meldung.teilnehmer_gender))
+
+                        h = h + 0.5
+                        if h > 26:
+                            current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
+                            p.setFillColorRGB(0, 0, 0)  # choose your font colour
+                            p.setFont('DejaVuSans', 8)
+                            p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
+                            h = 2
+                            p.showPage()
+
+        current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
+        p.setFont('DejaVuSans', 8)
+        p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
+
+        p.showPage()  # Erzwingt eine neue Seite
+
+    # Close the PDF object cleanly, and we're done.
+    p.save()
+
+    # FileResponse sets the Content-Disposition header so that browsers present the option to save the file.
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=False, filename="Meldungen.pdf")
 
 ##########################################################################
 # Area Ergebnisse erfassen
@@ -908,10 +1035,10 @@ def report_auswertung_mannschaft(request):
                             p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
                             rang = rang + 1
                         else:
-                            if hilfsrang > 0:
+                            if hilfsrang > 1:
                                 rang = rang + hilfsrang
                             p.drawString(0.5 * cm, hoehe - (h * cm), str(rang))
-                            rang = rang + 1
+                            #rang = rang + 1
                             hilfsrang = 0
 
                         p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.mannschaft) + ". Mannschaft")
@@ -1332,7 +1459,7 @@ def report_urkunde_mannschaft(request):
                                         "die " + str(ergebnis.mannschaft) + ". Mannschaft")
 
                     p.setFont('DejaVuSans', 18)
-                    p.drawCentredString(breite / 2, hoehe_start - (22 * cm), str(ergebnis.verein.verein_name))
+                    p.drawCentredString(breite / 2, hoehe_start - (22 * cm), str(ergebnis.verein.verein_name_kurz))
 
                     if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
                         hilfsrang = hilfsrang + 1
@@ -1407,8 +1534,8 @@ def report_urkunde_einzel(request):
                 for ergebnis in ergebnisse:
                     p.setFont('DejaVuSans-Bold', 18)
                     p.drawCentredString(breite / 2, hoehe_start - (18 * cm),
-                                        str(ergebnis.teilnehmer_name) + " " +
-                                        str(ergebnis.teilnehmer_vorname))
+                                        str(ergebnis.teilnehmer_vorname) + " " +
+                                        str(ergebnis.teilnehmer_name))
 
                     p.setFont('DejaVuSans', 18)
 
@@ -1416,7 +1543,7 @@ def report_urkunde_einzel(request):
                                         " *" + str(
                                             datetime.strptime(str(ergebnis.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
                     p.drawCentredString(breite / 2, hoehe_start - (20 * cm),
-                                        str(ergebnis.teilnehmer_verein.verein_name))
+                                        str(ergebnis.teilnehmer_verein.verein_name_kurz))
 
                     p.drawCentredString(breite / 2, hoehe_start - (21 * cm),
                                         "erreichte eine Gesamtpunktzahl von:")
@@ -1700,9 +1827,74 @@ def ligaturnen_tables_delete(request):
         count_ergebnisse_zwischen_einzel = LigaturnenErgebnisseZwischenLiga.objects.all().delete()
         count_ergebnisse_zwischen_liga = LigaturnenErgebnisseZwischenEinzel.objects.all().delete()
         count_teilnehmer = Teilnehmer.objects.all().delete()
+
+        #Autoincrement Feld zurücksetzen
+        if connection.vendor == 'sqlite':
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE sqlite_sequence SET seq = "
+                               "(SELECT MAX(id) FROM 'ligaturnen_ligaturnenergebnisse') "
+                               "WHERE name='ligaturnen_ligaturnenergebnisse'")
+
+                cursor.execute("UPDATE sqlite_sequence SET seq = "
+                               "(SELECT MAX(id) FROM 'ligaturnen_ligaturnenergebnissezwischenliga') "
+                               "WHERE name='ligaturnen_ligaturnenergebnissezwischenliga'")
+
+                cursor.execute("UPDATE sqlite_sequence SET seq = "
+                               "(SELECT MAX(id) FROM 'ligaturnen_ligaturnenergebnissezwischeneinzel') "
+                               "WHERE name='ligaturnen_ligaturnenergebnissezwischeneinzel'")
+
+                cursor.execute("UPDATE sqlite_sequence SET seq = "
+                               "(SELECT MAX(id) FROM 'ligaturnen_teilnehmer') "
+                               "WHERE name='ligaturnen_teilnehmer'")
+
+        elif connection.vendor == 'mysql':
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "ALTER TABLE ligaturnen_ligaturnenergebnisse AUTO_INCREMENT = 1;")
+
+                cursor.execute(
+                    "ALTER TABLE ligaturnen_ligaturnenergebnissezwischenliga AUTO_INCREMENT = 1;")
+
+                cursor.execute(
+                    "ALTER TABLE ligaturnen_ligaturnenergebnissezwischeneinzel AUTO_INCREMENT = 1;")
+
+                cursor.execute(
+                    "ALTER TABLE ligaturnen_teilnehmer AUTO_INCREMENT = 1;")
+
         return redirect('/ligaturnen/teilnehmer_list/')
     else:
         pass
 
     form = TablesDeleteForm()
     return render(request, 'ligaturnen/tables_delete.html', {'form': form})
+
+@login_required
+@permission_required('ligaturnen.add_teilnehmer')
+def check_rules(request):
+    mannschaften = [1, 2, 3]
+    #ligen = ['A', 'B', 'C', 'D', 'E', 'F']
+    ligen = Ligen.objects.all().order_by('liga')
+    vereine = Vereine.objects.all()
+    ligatag = LigaTag.objects.get()
+    mannschaft_error = []
+    for verein in vereine:
+        for liga in ligen:
+            for mannschaft in mannschaften:
+                teilnehmer_mannschaft = Teilnehmer.objects.filter(teilnehmer_mannschaft=mannschaft,
+                                                                  teilnehmer_verein=verein,
+                                                                  teilnehmer_ak=False,
+                                                                  teilnehmer_liga_tag = ligatag,
+                                                                  teilnehmer_liga = liga
+                                                                  )
+
+                if teilnehmer_mannschaft.count() > 6:
+                    #print(f"Ligatag: {ligatag}; Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}, {str(teilnehmer_mannschaft)}  ")
+                    mannschaft_error.append(f"{verein}; {mannschaft}. Mannschaft hat zu viele Teilnehmer ({teilnehmer_mannschaft.count()} Teilnehmer) beim {ligatag}. Ligatag")
+
+                for teil_mannschaft in teilnehmer_mannschaft:
+                    #jahrgang = datetime.strptime(str(teil_mannschaft.teilnehmer_geburtsjahr), "%Y-%m-%d").year
+
+                    if teil_mannschaft.teilnehmer_geburtsjahr < liga.liga_ab:
+                        print(f"{teil_mannschaft.teilnehmer_geburtsjahr} {liga.liga_ab} {verein} {liga} {mannschaft} {teil_mannschaft.teilnehmer_name} Falscher Jahrgang")
+
+    return render(request, 'ligaturnen/check_rules.html', {'mannschaft_error': mannschaft_error})

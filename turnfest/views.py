@@ -19,6 +19,7 @@ from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.http import FileResponse
+from django.db import connection
 
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 
@@ -143,8 +144,6 @@ def vereine_upload(request):
         form = UploadFileForm()
     return render(request, 'turnfest/vereine_upload.html', {'form': form})
 
-@login_required
-@permission_required('turnfest.view_vereine')
 def vereine_handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file, na_filter=False)
@@ -213,8 +212,13 @@ def teilnehmer_upload(request):
             request.session['count_positiv_turnfest'] = str(countdict["count_positiv"])
             request.session['count_negativ_turnfest'] = str(countdict["count_negativ"])
             logger.info(f"User {request.user.id} hat eine neue Teilnehmerliste hochgeladen")
+            if countdict["name_fault"]:
+                request.session['name_fault'] = str(countdict["name_fault"])
+                form = UploadFileForm()
+                return render(request, 'turnfest/teilnehmer_upload.html', {'form': form})
             return redirect('/turnfest/teilnehmer_list/')
     else:
+        request.session['name_fault'] = ""
         form = UploadFileForm()
     return render(request, 'turnfest/teilnehmer_upload.html', {'form': form})
 
@@ -222,30 +226,52 @@ def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
     df = pd.read_excel(file)
 
+    name_fault = ""
     count_positiv = 0
     count_negativ = 0
     # Iteriere durch die Zeilen und speichere die Daten in der Datenbank
     for index, row in df.iterrows():
-        Teilnehmer_neu = Teilnehmer(teilnehmer_name=row['Nachname'],
-                                    teilnehmer_vorname=row['Vorname'],
-                                    teilnehmer_gender=row['Geschlecht'],
-                                    teilnehmer_geburtsjahr=row['Geburtsjahr'],
-                                    teilnehmer_verein_id=row['Verein'],
-                                    teilnehmer_anwesend="True",
-                                    teilnehmer_sprung=row['Sprung'],
-                                    teilnehmer_mini=row['Minitrampolin'],
-                                    teilnehmer_reck_stufenbarren=row['Reck_Stufenbarren'],
-                                    teilnehmer_balken=row['Schwebebalken'],
-                                    teilnehmer_barren=row['Barren'],
-                                    teilnehmer_boden=row['Boden'],
-                                    )
-        try:
-            Teilnehmer_neu.save()
-            count_positiv = count_positiv + 1
-        except:
-            count_negativ = count_negativ + 1
+        counter_geraet = 0
+        name_fault = ''
 
-    countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ}
+        if row['Sprung'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Minitrampolin'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Reck_Stufenbarren'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Schwebebalken'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Barren'] > 0:
+            counter_geraet = counter_geraet + 1
+        if row['Boden'] > 0:
+            counter_geraet = counter_geraet + 1
+
+        if counter_geraet <= 4:
+            Teilnehmer_neu = Teilnehmer(teilnehmer_name=row['Nachname'],
+                                        teilnehmer_vorname=row['Vorname'],
+                                        teilnehmer_gender=row['Geschlecht'],
+                                        teilnehmer_geburtsjahr=row['Geburtsjahr'],
+                                        teilnehmer_verein_id=row['Verein'],
+                                        teilnehmer_anwesend="True",
+                                        teilnehmer_sprung=row['Sprung'],
+                                        teilnehmer_mini=row['Minitrampolin'],
+                                        teilnehmer_reck_stufenbarren=row['Reck_Stufenbarren'],
+                                        teilnehmer_balken=row['Schwebebalken'],
+                                        teilnehmer_barren=row['Barren'],
+                                        teilnehmer_boden=row['Boden'],
+                                        )
+            try:
+                Teilnehmer_neu.save()
+                count_positiv = count_positiv + 1
+            except:
+                count_negativ = count_negativ + 1
+        else:
+            name_fault = row['Nachname'] + " "+ row['Vorname']
+            countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ, "name_fault": name_fault}
+            return countdict
+
+    countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ, "name_fault": name_fault}
     return countdict
 
 
@@ -826,7 +852,7 @@ def report_auswertung_vereine(request):
 
         ergebnisse = (BezirksturnfestErgebnisse.objects.filter(ergebnis_teilnehmer__teilnehmer_verein=verein).
                       order_by('ergebnis_teilnehmer__teilnehmer_geburtsjahr'))
-        print(ergebnisse)
+        #print(ergebnisse)
         for ergebnis in ergebnisse:
             h = h + 0.4
             jahr = datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr), "%Y-%m-%d").year
@@ -860,9 +886,25 @@ def delete_tables_bezirksturnfest(request):
     if request.method == 'POST':
         count_ergebnisse = BezirksturnfestErgebnisse.objects.all().delete()
         count_teilnehmer = Teilnehmer.objects.all().delete()
+        #Teilnehmer.objects.raw("ALTER TABLE turnfest_teilnehmer AUTO_INCREMENT = 1;")
         #count_vereine = Vereine.objects.all().delete()
         #UPDATE sqlite_sequence SET seq = (SELECT MAX(col) FROM Tbl) WHERE name="Tbl"
         #print(count_teilnehmer)
+
+        #Autoincrement Feld zurücksetzen
+        if connection.vendor == 'sqlite':
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE sqlite_sequence SET seq = "
+                               "(SELECT MAX(id) FROM 'turnfest_teilnehmer') WHERE name='turnfest_teilnehmer'")
+                cursor.execute("UPDATE sqlite_sequence SET seq = "
+                               "(SELECT MAX(id) FROM 'turnfest_bezirksturnfestergebnisse') "
+                               "WHERE name='turnfest_bezirksturnfestergebnisse'")
+        elif connection.vendor == 'mysql':
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "ALTER TABLE turnfest_teilnehmer AUTO_INCREMENT = 1;")
+
+
         return redirect('/turnfest/teilnehmer_list/')
     else:
         pass

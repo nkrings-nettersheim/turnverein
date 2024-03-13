@@ -25,6 +25,20 @@
             <div class="row">
                 <div class="col-sm-2"></div>
                 <div class="col-sm-2"></div>
+                <div class="col-sm-4 text-danger">
+                {% if request.session.name_fault %}
+                    Beim Datensatz "{{ request.session.name_fault }} sind zu viele Geräte angegeben!! <br>Bitte korrigieren und erneut einlesen!
+                {% endif %}
+                </div>
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2"></div>
+            </div>
+
+
+
+            <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2"></div>
                 <div class="col-sm-4">
                     {{ form|crispy }}
                 </div>

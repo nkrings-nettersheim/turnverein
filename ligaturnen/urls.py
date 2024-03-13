@@ -51,7 +51,9 @@ urlpatterns = [
     # mix Bereich
     path('download/', views.download_document, name='download'),
     path('geraetelisten/', views.report_geraetelisten, name='geraetelisten'),
+    path('meldungen/', views.report_meldungen, name='meldungen'),
     path('tables_delete/', views.ligaturnen_tables_delete, name='tables_delete'),
     path('ligatag_edit/<int:pk>/', views.LigaTagUpdateView.as_view(), name='ligatag_edit'),
+    path('check_rules/', views.check_rules, name='check_rules'),
 
 ]

@@ -25,7 +25,9 @@
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">kurz vorm Start</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{% url 'ligaturnen:ligatag_edit' 1 %}">Wettkampftag festlegen</a></li>
-            <li><a class="dropdown-item" href="{% url 'ligaturnen:geraetelisten'%}">Gerätelisten</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:check_rules' %}">Meldungen prüfen</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:meldungen' %}">Meldungen Übersicht</a></li>
+            <li><a class="dropdown-item" href="{% url 'ligaturnen:geraetelisten' %}">Gerätelisten</a></li>
           </ul>
       </li>
     {% endif %}
@@ -39,7 +41,7 @@
         <a class="nav-link" href="{% url 'ligaturnen:ergebnisse_list'%}">Ergebnisse anzeigen</a>
       </li>
     {% endif %}
-    {% if perms.ligaturnen.view_ligaturnenergebnisse %}
+    {% if perms.ligaturnen.add_teilnehmer %}
       <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Wettkampfende</a>
           <ul class="dropdown-menu">

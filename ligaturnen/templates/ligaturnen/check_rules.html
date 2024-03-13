@@ -1,0 +1,46 @@
+{% extends "base_ligaturnen.html" %}
+
+{% block title %}
+    Turnfest
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6 text-center">
+            <h2>Überprüfung der Regeln</h2>
+
+        </div>
+        <div class="col-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6 text-center">
+            {% if mannschaft_error %}
+            {% for mannschaft in mannschaft_error %}
+                <p> {{ mannschaft }}</p>
+            {% endfor %}
+            {% else %}
+                <p> Alles ok!</p>
+            {% endif %}
+            <p></p>
+        </div>
+        <div class="col-3"></div>
+    </div>
+    <br><br>
+    <div class="row">
+        <div class="col-3"></div>
+        <div class="col-6 text-center">
+            <h3></h3>
+            <p></p>
+        </div>
+        <div class="col-3"></div>
+    </div>
+
+</div>
+
+{% endblock %}

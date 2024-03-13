@@ -48,6 +48,7 @@ class Meisterschaften(models.Model):
         return self.meisterschaft + " " + self.meisterschaft_gender
 
 
+#Bei der nächsten Bereinigung kann dieses Model komplett entfernt werden
 class Bezirksturnfest(models.Model):
     bezirksturnfest = models.CharField(max_length=50, blank=True, default='', null=True)
     austragungsort = models.CharField(max_length=30, blank=True, default='', null=True)

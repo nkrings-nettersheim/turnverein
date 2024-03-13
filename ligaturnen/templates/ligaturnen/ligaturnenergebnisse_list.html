@@ -26,6 +26,7 @@
           <th class="col-sm-1 text-center">Verein</th>
           <th class="col-sm-1 text-center">Mannschaft</th>
           <th class="col-sm-1">Name</th>
+          <th class="col-sm-1 text-center">Gender</th>
           <th class="col-sm-1 text-center">Sprung</th>
           <th class="col-sm-1 text-center">Minitr.</th>
           <th class="col-sm-1 text-center">Reck/Stuf.</th>
@@ -46,7 +47,7 @@
             <td class="text-center">{{ ergebnis.ergebnis_teilnehmer.teilnehmer_mannschaft }}</td>
 
             <td>{{ ergebnis.ergebnis_teilnehmer.id }} {{ ergebnis.ergebnis_teilnehmer.teilnehmer_vorname }} {{ ergebnis.ergebnis_teilnehmer.teilnehmer_name }}</td>
-
+            <td class="text-center">{{ ergebnis.ergebnis_teilnehmer.teilnehmer_gender }}</td>
             <td class="text-center">{{ ergebnis.ergebnis_sprung_s }}</td>
             <td class="text-center">{{ ergebnis.ergebnis_mini_s }}</td>
             <td class="text-center">{{ ergebnis.ergebnis_reck_s }}</td>

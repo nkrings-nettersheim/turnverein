@@ -437,6 +437,7 @@ class AuswertungenTests(TestCase):
         Teilnehmer.objects.create(teilnehmer_name="Muster")
         Geraete.objects.create(geraet_name="Sprung")
         BezirksturnfestErgebnisse.objects.create(ergebnis_teilnehmer_id=1)
+        Konfiguration.objects.create(jahr='2024', bezirksturnfest='81. Bezirksturnfest')
 
         content_type = ContentType.objects.get_for_model(BezirksturnfestErgebnisse)
 
