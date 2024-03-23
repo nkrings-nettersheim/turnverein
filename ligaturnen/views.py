@@ -161,7 +161,7 @@ class TeilnehmerCreateView(PermissionRequiredMixin, CreateView):
 class TeilnehmerList(PermissionRequiredMixin, ListView):
     permission_required = "ligaturnen.view_teilnehmer"
     model = Teilnehmer
-    ordering = ['teilnehmer_liga_tag', 'teilnehmer_liga', 'teilnehmer_verein', 'teilnehmer_mannschaft',
+    ordering = ['teilnehmer_liga_tag', 'teilnehmer_liga', 'teilnehmer_verein', '-teilnehmer_gender', 'teilnehmer_mannschaft',
                 'teilnehmer_name', 'teilnehmer_vorname']
 
 

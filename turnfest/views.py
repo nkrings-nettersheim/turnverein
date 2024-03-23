@@ -20,6 +20,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse_lazy, reverse
 from django.http import FileResponse
 from django.db import connection
+from django.db.models import Max
 
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT
 
@@ -586,11 +587,11 @@ def report_auswertung(request):
 
     for meisterschaft in meisterschaften:
 
-        ergebnisse = BezirksturnfestErgebnisse.objects.filter(
+        ergebnisse = (BezirksturnfestErgebnisse.objects.filter(
             ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
             ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(meisterschaft.meisterschaft_bis),
-            ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender
-        ).order_by('ergebnis_teilnehmer__teilnehmer_geburtsjahr', '-ergebnis_summe')
+            ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender).
+                      order_by("ergebnis_teilnehmer__teilnehmer_geburtsjahr__year", '-ergebnis_summe'))
 
         h = 1
         p.setFont('DejaVuSans-Bold', 18)
@@ -681,15 +682,15 @@ def report_auswertung(request):
 
             p.setFillGray(0.0)
             p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm,
-                         meisterschaft.meisterschaft + " " + meisterschaft.meisterschaft_gender)
+                         meisterschaft.meisterschaft + " hallo " + meisterschaft.meisterschaft_gender)
 
-            meister_innen = BezirksturnfestErgebnisse.objects.filter(
+            meister_innen = (BezirksturnfestErgebnisse.objects.filter(
                 ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
                 ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(meisterschaft.meisterschaft_bis),
-                ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender).order_by("-ergebnis_summe")
-            #            assert False
-            h = h + 0.5
+                ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender).
+                             order_by("-ergebnis_summe"))
 
+            h = h + 0.5
             i = 0  # zähler
             ergebnis_zwischen = 0  # zwischenspeicherung des vorherigen ergebnisses
             for meister_in in meister_innen:
@@ -704,8 +705,8 @@ def report_auswertung(request):
                     p.drawString(5.0 * cm, hoehe - (h * cm),
                                  str(meister_in.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
                     p.drawString(9.5 * cm, hoehe - (h * cm), str(meister_in.ergebnis_summe) + " " + "Punkte")
-
-                ergebnis_zwischen = meister_in.ergebnis_summe
+                    # das Übertragen findet nur hier statt, weil es für die weiteren Plätze nicht relevant ist.
+                    ergebnis_zwischen = meister_in.ergebnis_summe
                 i = i + 1
                 h = h + 0.4
 

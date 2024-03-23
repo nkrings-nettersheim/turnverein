@@ -34,7 +34,6 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
-                'autofocus': 'autofocus',
             }
         ))
 
