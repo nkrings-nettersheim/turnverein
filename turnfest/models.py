@@ -151,5 +151,7 @@ class Konfiguration(models.Model):
     jahr = models.CharField(max_length=4, blank=True, default='', null=True)
     bezirksturnfest = models.CharField(max_length=255, blank=True, default='', null=True)
     kosten_teilnehmer = models.DecimalField(max_digits=4, decimal_places=2, default=0.00)
+    bezirksturnfest_aktiv = models.BooleanField(default=True, null=True)
+
     def __str__(self):
         return str(self.abstand_urkunde_einzel)
