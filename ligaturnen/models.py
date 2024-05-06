@@ -197,6 +197,7 @@ class Konfiguration(models.Model):
     abstand_urkunde_einzel = models.IntegerField(default=0, null=True, blank=True,)
     abstand_urkunde_mannschaft = models.IntegerField(default=0, null=True, blank=True,)
     liga_jahr = models.CharField(max_length=4, blank=True, default='', null=True)
+    ligaturnen_aktiv =models.BooleanField(default=True, null=True)
 
     def __str__(self):
         return str(self.abstand_urkunde_einzel)

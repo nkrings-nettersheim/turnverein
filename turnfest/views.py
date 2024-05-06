@@ -32,6 +32,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, PageBreak, Spacer
 
 from weasyprint import HTML, CSS
 
+import ligaturnen.models
 from turnverein.settings import BASE_DIR
 
 from .models import Vereine, Teilnehmer, Geraete, Riegen, BezirksturnfestErgebnisse, Meisterschaften, Konfiguration
@@ -47,7 +48,9 @@ logger = logging.getLogger(__name__)
 ##########################################################################
 @login_required
 def index(request):
-    return render(request, 'turnfest/index.html')
+    conf_liegaturnen = ligaturnen.models.Konfiguration.objects.get(id=1)
+    conf_bezirksturnfest = Konfiguration.objects.get(id=1)
+    return render(request, 'turnfest/index.html', {'conf_bezirksturnfest': conf_bezirksturnfest, 'conf_ligaturnen': conf_liegaturnen})
 
 @login_required
 @permission_required('turnfest.view_bezirksturnfestergebnisse')

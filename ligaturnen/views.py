@@ -41,7 +41,9 @@ locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 
 @login_required
 def index(request):
-    return render(request, 'ligaturnen/index.html')
+    conf_ligaturnen = Konfiguration.objects.get(id=1)
+
+    return render(request, 'ligaturnen/index.html', {'configuration': conf_ligaturnen})
 
 
 @login_required
@@ -499,12 +501,9 @@ def report_meldungen(request):
 
         p.setFont('DejaVuSans-Bold', 14)
         p.drawCentredString(breite / 2, hoehe - (h * cm), verein.verein_name_kurz)
+        h = h + 0.5
 
         for liga in ligen:
-            h = h + 0.5
-            p.setFillColorRGB(0, 0, 0)  # choose your font colour
-            p.setFont('DejaVuSans-Bold', 12)
-            p.drawCentredString(breite / 2, hoehe - (h * cm), str(liga) + "-Liga")
 
             for mannschaft in mannschaften:
                 meldungen = Teilnehmer.objects.filter(teilnehmer_verein=verein,
@@ -515,6 +514,10 @@ def report_meldungen(request):
                                                       teilnehmer_liga_tag=ligaTag).order_by('teilnehmer_name')
 
                 if meldungen:
+                    h = h + 0.5
+                    p.setFillColorRGB(0, 0, 0)  # choose your font colour
+                    p.setFont('DejaVuSans-Bold', 12)
+                    p.drawCentredString(breite / 2, hoehe - (h * cm), str(liga) + "-Liga")
                     h = h + 0.5
                     p.setFillColorRGB(0, 0, 0)  # choose your font colour
                     p.setFont('DejaVuSans', 10)
@@ -625,7 +628,7 @@ def add_ergebnis(request):
             return redirect('/ligaturnen/ergebnis_erfassen_suche/')
         else:
             for field in form:
-                print("Field Error:", field.name, field.errors)
+                logger.debug("Field Error:", field.name, field.errors)
     else:
         teilnehmer = Teilnehmer.objects.get(id=request.session['startnummer'])
         ligatag = LigaTag.objects.get(id=1)
@@ -732,7 +735,7 @@ def report_auswertung_mannschaft(request):
 
     for liga in ligen:
         for verein in vereine:
-            for mannschaft in range(1, 3):
+            for mannschaft in range(1, 5):
                 for gen in gender:
                     for ligatag in ligatage:
                         erg_zwischen = []
@@ -749,7 +752,6 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_sprung_s')[:3]
                             if erg_sprung:
                                 for erg in erg_sprung:
-                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Sprung: {erg.ergebnis_sprung_s}")
                                     erg_zwischen.append(erg.ergebnis_sprung_s)
                         except:
                             pass
@@ -765,7 +767,6 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_mini_s')[:3]
                             if erg_mini:
                                 for erg in erg_mini:
-                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Mini: {erg.ergebnis_mini_s}")
                                     erg_zwischen.append(erg.ergebnis_mini_s)
                         except:
                             pass
@@ -781,7 +782,6 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_reck_s')[:3]
                             if erg_reck:
                                 for erg in erg_reck:
-                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Reck: {erg.ergebnis_reck_s}")
                                     erg_zwischen.append(erg.ergebnis_reck_s)
                         except:
                             pass
@@ -797,7 +797,6 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_barren_s')[:3]
                             if erg_barren:
                                 for erg in erg_barren:
-                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Barren: {erg.ergebnis_barren_s}")
                                     erg_zwischen.append(erg.ergebnis_barren_s)
                         except:
                             pass
@@ -813,7 +812,6 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_balken_s')[:3]
                             if erg_balken:
                                 for erg in erg_balken:
-                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis Balken: {erg.ergebnis_balken_s}")
                                     erg_zwischen.append(erg.ergebnis_balken_s)
                         except:
                             pass
@@ -828,15 +826,12 @@ def report_auswertung_mannschaft(request):
                             ).order_by('-ergebnis_boden_s')[:3]
                             if erg_boden:
                                 for erg in erg_boden:
-                                    #print(f"Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}; Gender: {gen}; ligatag: {ligatag}; Ergebnis boden: {erg.ergebnis_boden_s}")
                                     erg_zwischen.append(erg.ergebnis_boden_s)
                         except:
                             pass
 
                         # sortieren des List Objekts:
                         erg_zwischen.sort(reverse=True)
-                        #if erg_zwischen:
-                            #print(f"Ergebnis sortiert: {erg_zwischen}")
 
                         if len(erg_zwischen) >= 12:
                             anzahl = 12
@@ -848,7 +843,6 @@ def report_auswertung_mannschaft(request):
 
 
                         if erg_summe > 0:
-                            print(f"Ergebnis Summe: {erg_summe} Ligatag: {ligatag}")
                             mannschaftergebnis = LigaturnenErgebnisseZwischenLiga(
                                 liga=liga,
                                 verein=verein,
@@ -861,7 +855,7 @@ def report_auswertung_mannschaft(request):
                             try:
                                 mannschaftergebnis.save()
                             except:
-                                print(f"Mannschftsergebnis konnte nicht angelegt werden")
+                                logger.info("Mannschftsergebnis konnte nicht angelegt werden")
 
     for liga in ligen:
         for verein in vereine:
@@ -878,13 +872,11 @@ def report_auswertung_mannschaft(request):
                         )
                         if ergebnis:
                             for erg in ergebnis:
-                                print(f"{erg.ergebnis_summe}")
                                 erg_summe = erg_summe + erg.ergebnis_summe
 
                     except:
-                        print("There was an error inside save")
+                        logger.debug("There was an error inside save")
 
-                    #print(f"ERgebnis Gesamt Summe: {erg_summe}")
                     if erg_summe > 0:
                         mannschaftergebnisgesamt = LigaturnenErgebnisseZwischenLigaGesamt(
                             liga=liga,
@@ -897,7 +889,7 @@ def report_auswertung_mannschaft(request):
                         try:
                             mannschaftergebnisgesamt.save()
                         except:
-                            print("There was an error inside Save mannschaftsergebnisgesamt")
+                            logger.debug("There was an error inside Save mannschaftsergebnisgesamt")
 
     for gen in gender:
         for liga in ligen:
@@ -1134,7 +1126,7 @@ def report_auswertung_einzel(request):
                         boden_zwischen = ergebnis.ergebnis_boden_s + boden_zwischen
                         teilnehmer_alias_1 = teilnehmer_alias_2
                 except:
-                    logger.info("An exception occurred")
+                    logger.debug("An exception occurred")
             else:
                 sprung_zwischen = 0
                 mini_zwischen = 0
@@ -1153,7 +1145,7 @@ def report_auswertung_einzel(request):
                         boden_zwischen = ergebnis.ergebnis_boden_s + boden_zwischen
                         teilnehmer_alias_1 = teilnehmer_alias_2
                 except:
-                    logger.info("An exception occurred")
+                    logger.debug("An exception occurred")
 
             summe_zwischen = sprung_zwischen + mini_zwischen + reck_zwischen + balken_zwischen + barren_zwischen + boden_zwischen
             if summe_zwischen > 0:
@@ -1177,21 +1169,6 @@ def report_auswertung_einzel(request):
     for gen in gender:
         for liga in ligen:
 
-            h = 1
-            p.setFont('DejaVuSans-Bold', 24)
-            p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr))
-            h = h + 1
-            p.setFont('DejaVuSans-Bold', 18)
-            p.drawCentredString(breite / 2, hoehe - (h * cm), "Ergebnisliste Einzelwertung")
-            h = h + 0.8
-            p.setFont('DejaVuSans-Bold', 14)
-            if gen == 'w':
-                gen_long = 'weiblich'
-            else:
-                gen_long = 'männlich'
-
-            p.drawCentredString(breite / 2, hoehe - (h * cm), liga.liga + "-Liga, " + gen_long)
-
             ergebnisse = LigaturnenErgebnisse.objects.filter(
                 ergebnis_teilnehmer__teilnehmer_gender=gen,
                 ergebnis_teilnehmer__teilnehmer_liga=liga,
@@ -1199,6 +1176,22 @@ def report_auswertung_einzel(request):
             ).order_by('-ergebnis_summe')
 
             if ergebnisse:
+                h = 1
+                p.setFont('DejaVuSans-Bold', 24)
+                p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr))
+                h = h + 1
+                p.setFont('DejaVuSans-Bold', 18)
+                p.drawCentredString(breite / 2, hoehe - (h * cm), "Ergebnisliste Einzelwertung")
+                h = h + 0.8
+                p.setFont('DejaVuSans-Bold', 14)
+                if gen == 'w':
+                    gen_long = 'weiblich'
+                else:
+                    gen_long = 'männlich'
+
+                p.drawCentredString(breite / 2, hoehe - (h * cm), liga.liga + "-Liga, " + gen_long)
+
+
 
                 p.setFont('DejaVuSans', 8)
 
@@ -1403,7 +1396,7 @@ def report_auswertung_einzel(request):
                 current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
                 p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
 
-            p.showPage()  # Erzwingt eine neue Seite
+                p.showPage()  # Erzwingt eine neue Seite
 
     # Close the PDF object cleanly, and we're done.
     p.save()
@@ -1518,7 +1511,6 @@ def report_urkunde_einzel(request):
     # Holen der Seitenabmessung
     breite, hoehe = A4
     hoehe_start = hoehe + 50
-    #print(hoehe_start)
 
     gender = ['w', 'm']
 
@@ -1772,7 +1764,10 @@ def report_auswertung_vereine(request):
             p.drawString(18.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
 
             h = h + 0.5
-
+            if h > 28:
+                p.showPage()
+                h = 1
+                p.setFont('DejaVuSans', 8)
 
         current_dateTime = datetime.now().strftime("%d.%m.%Y %H:%M Uhr")
         p.drawString(0.5 * cm, hoehe - (29 * cm), str(current_dateTime))
@@ -1897,13 +1892,10 @@ def check_rules(request):
                                                                   )
 
                 if teilnehmer_mannschaft.count() > 6:
-                    #print(f"Ligatag: {ligatag}; Liga: {liga}; Verein: {verein}; Mannschaft: {mannschaft}, {str(teilnehmer_mannschaft)}  ")
                     mannschaft_error.append(f"{verein}; {mannschaft}. Mannschaft hat zu viele Teilnehmer ({teilnehmer_mannschaft.count()} Teilnehmer) beim {ligatag}. Ligatag")
 
                 for teil_mannschaft in teilnehmer_mannschaft:
-                    #jahrgang = datetime.strptime(str(teil_mannschaft.teilnehmer_geburtsjahr), "%Y-%m-%d").year
-
                     if teil_mannschaft.teilnehmer_geburtsjahr < liga.liga_ab:
-                        print(f"{teil_mannschaft.teilnehmer_geburtsjahr} {liga.liga_ab} {verein} {liga} {mannschaft} {teil_mannschaft.teilnehmer_name} Falscher Jahrgang")
+                        logger.debug(f"{teil_mannschaft.teilnehmer_geburtsjahr} {liga.liga_ab} {verein} {liga} {mannschaft} {teil_mannschaft.teilnehmer_name} Falscher Jahrgang")
 
     return render(request, 'ligaturnen/check_rules.html', {'mannschaft_error': mannschaft_error})

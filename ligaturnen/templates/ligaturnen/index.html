@@ -9,6 +9,8 @@
 
 <div class="container-fluid">
     <div class="row">&nbsp;</div>
+    {% if user.groups.all.0.name == "Wettkampfrichter" %}
+    {% if conf_bezirksturnfest.bezirksturnfest_aktiv %}
     <div class="row">
         <div class="col-sm-4"></div>
             <div class="col-sm-4 bg-primary text-white rounded text-center">
@@ -18,16 +20,44 @@
             </div>
         <div class="col-sm-4"></div>
     </div>
+    {% endif %}
+    {% else %}
+    <div class="row">
+        <div class="col-sm-4"></div>
+            <div class="col-sm-4 bg-primary text-white rounded text-center">
+                <a class="text-white inline" href="{% url 'turnfest:bezirksturnfest'%}">
+                    <p>Alles rund ums Bezirksturnfest</p>
+                </a>
+            </div>
+        <div class="col-sm-4"></div>
+    </div>
+
+    {% endif %}
+
     <div class="row">&nbsp;</div>
+    {% if user.groups.all.0.name == "Wettkampfrichter" %}
+    {% if conf_ligaturnen.ligaturnen_aktiv %}
     <div class="row">
         <div class="col-sm-4"></div>
         <div class="col-sm-4 bg-primary text-white rounded text-center">
             <a class="text-white inline" href="{% url 'ligaturnen:ligawettkampf'%}">
-            <p>Alles rund ums Ligaturnfest</p>
+                <p>Alles rund ums Ligaturnfest</p>
             </a>
         </div>
         <div class="col-sm-4"></div>
     </div>
+    {% endif %}
+    {% else %}
+    <div class="row">
+        <div class="col-sm-4"></div>
+        <div class="col-sm-4 bg-primary text-white rounded text-center">
+            <a class="text-white inline" href="{% url 'ligaturnen:ligawettkampf'%}">
+                <p>Alles rund ums Ligaturnfest</p>
+            </a>
+        </div>
+        <div class="col-sm-4"></div>
+    </div>
+    {% endif %}
     <div class="row">&nbsp;</div>
 </div>
 
