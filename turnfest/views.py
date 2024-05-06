@@ -8,34 +8,27 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import PermissionRequiredMixin, PermissionRequiredMixin
-from django.db.models import Count, DateField, DateTimeField
-from django.db.models.functions import Cast, TruncDate
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import UpdateView, CreateView, DeleteView
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.http import FileResponse
 from django.db import connection
-from django.db.models import Max
 
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4, letter
+from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Table, TableStyle, Frame
-from reportlab.graphics.shapes import Line
+from reportlab.platypus import Table, TableStyle
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph, SimpleDocTemplate, PageBreak, Spacer
-
-from django.views import View
 
 from weasyprint import HTML, CSS
 

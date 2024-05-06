@@ -349,6 +349,7 @@ def report_geraetelisten(request):
             if geraet.geraet_db_name == "teilnehmer_sprung":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_sprung__gt=0,
+                    teilnehmer_anwesend=True,
                     teilnehmer_liga_tag=ligaTag,
                     teilnehmer_liga=liga).values_list('id',
                                                       'teilnehmer_name',
@@ -361,6 +362,7 @@ def report_geraetelisten(request):
             elif geraet.geraet_db_name == "teilnehmer_mini":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_mini__gt=0,
+                    teilnehmer_anwesend=True,
                     teilnehmer_liga_tag=ligaTag,
                     teilnehmer_liga=liga).values_list('id',
                                                       'teilnehmer_name',
@@ -373,6 +375,7 @@ def report_geraetelisten(request):
             elif geraet.geraet_db_name == "teilnehmer_reck_stufenbarren":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_reck_stufenbarren__gt=0,
+                    teilnehmer_anwesend=True,
                     teilnehmer_liga_tag=ligaTag,
                     teilnehmer_liga=liga).values_list('id',
                                                       'teilnehmer_name',
@@ -385,6 +388,7 @@ def report_geraetelisten(request):
             elif geraet.geraet_db_name == "teilnehmer_balken":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_balken__gt=0,
+                    teilnehmer_anwesend=True,
                     teilnehmer_liga_tag=ligaTag,
                     teilnehmer_liga=liga).values_list('id',
                                                       'teilnehmer_name',
@@ -397,6 +401,7 @@ def report_geraetelisten(request):
             elif geraet.geraet_db_name == "teilnehmer_barren":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_barren__gt=0,
+                    teilnehmer_anwesend=True,
                     teilnehmer_liga_tag=ligaTag,
                     teilnehmer_liga=liga).values_list('id',
                                                       'teilnehmer_name',
@@ -409,6 +414,7 @@ def report_geraetelisten(request):
             elif geraet.geraet_db_name == "teilnehmer_boden":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_boden__gt=0,
+                    teilnehmer_anwesend=True,
                     teilnehmer_liga_tag=ligaTag,
                     teilnehmer_liga=liga).values_list('id',
                                                       'teilnehmer_name',
@@ -573,13 +579,16 @@ def ergebnis_erfassen_suche(request):
             teilnehmer = Teilnehmer.objects.get(id=startnummer, teilnehmer_liga_tag=ligatag.ligatag)
             try:
                 ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
+                logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} ändern (edit)")
                 return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/')
             except:
+                logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} neu anlegen (add)")
                 return redirect("/ligaturnen/add/ergebnis" + "/")
 
         except:
             form = ErgebnisTeilnehmerSuchen()
             form.startnummerfalse = True
+            logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} suchen, die gibt es aber nicht")
             return render(request, 'ligaturnen/ergebnis_erfassen_suche.html', {'form': form})
 
 
