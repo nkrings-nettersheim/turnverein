@@ -859,7 +859,7 @@ def report_auswertung_mannschaft(request):
 
     for liga in ligen:
         for verein in vereine:
-            for mannschaft in range(1, 3):
+            for mannschaft in range(1, 5):
                 for gen in gender:
                     erg_summe = 0
 
