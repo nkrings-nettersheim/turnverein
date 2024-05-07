@@ -12,6 +12,7 @@ class Vereine(models.Model):
     verein_ort = models.CharField(max_length=100, blank=True, default='', null=True)
     verein_telefon = models.CharField(max_length=100, blank=True, default='', null=True)
     verein_email = models.EmailField(max_length=254, blank=True)
+    verein_aktiv = models.BooleanField(default=True, blank=True)
 
     def __str__(self):
         return self.verein_name_kurz

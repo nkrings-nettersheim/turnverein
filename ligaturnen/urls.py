@@ -38,6 +38,7 @@ urlpatterns = [
     #ergebnis erfassen Bereich
     path('ergebnis_erfassen_suche/', views.ergebnis_erfassen_suche, name='ergebnis_erfassen_suche'),
     path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
+    path('update_or_create/ergebnis/', views.update_or_create_ergebnis, name='update_or_create_ergebnis'),
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
     path('ergebnisse_list/', views.ErgebnisseList.as_view(), name='ergebnisse_list'),
 

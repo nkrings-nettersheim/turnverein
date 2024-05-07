@@ -112,7 +112,7 @@ class VereineDeleteView(PermissionRequiredMixin, DeleteView):
 @login_required
 @permission_required('turnfest.view_vereine')
 def report_vereine(request):
-    vereine = Vereine.objects.all()
+    vereine = Vereine.objects.filter(verein_aktiv=True)
 
     html_file = 'pdf_templates/report_vereine.html'
     css_file = '/css/report_vereine.css'
@@ -820,7 +820,7 @@ def report_auswertung_vereine(request):
     # Holen der Seitenabmessung
     breite, hoehe = A4
 
-    vereine = Vereine.objects.all()
+    vereine = Vereine.objects.filter(verein_aktiv=True)
 
     for verein in vereine:
 
