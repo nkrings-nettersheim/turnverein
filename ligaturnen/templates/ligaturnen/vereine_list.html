@@ -27,6 +27,7 @@
               <th class="col-sm-2">Ort</th>
               <th class="col-sm-1">Telefon</th>
               <th class="col-sm-1">E-Mail</th>
+              <th class="col-sm-1">aktiv</th>
               <th class="col-sm-1">Bearbeiten</th>
           </tr>
         </thead>
@@ -41,6 +42,7 @@
                 <td>{{ vereine.verein_ort|default_if_none:"" }}</td>
                 <td>{{ vereine.verein_telefon|default_if_none:"" }}</td>
                 <td>{{ vereine.verein_email|default_if_none:"" }}</td>
+                <td>{{ vereine.verein_aktiv }}</td>
                   <td class="col-sm-1">
                       <a href="{% url 'ligaturnen:vereine_edit' vereine.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-pen-to-square" title="ändern"></i></a>
                       <a href="{% url 'ligaturnen:vereine_detail' vereine.id %}" class="p-1 link-secondary"><i class="fa-sharp fa-solid fa-eye" title="anzeigen"></i></a>

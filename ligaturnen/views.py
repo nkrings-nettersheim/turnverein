@@ -484,7 +484,7 @@ def report_meldungen(request):
 
     configuration = Konfiguration.objects.get(id=1)
     ligen = Ligen.objects.all()
-    vereine = Vereine.objects.all()
+    vereine = Vereine.objects.filter(verein_aktiv=True)
     ligaTag = LigaTag.objects.get(id=1)
     mannschaften = [1, 2, 3]
 
@@ -561,7 +561,7 @@ def report_meldungen(request):
 
     # FileResponse sets the Content-Disposition header so that browsers present the option to save the file.
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=False, filename="Meldungen.pdf")
+    return FileResponse(buffer, as_attachment=True, filename="Meldungen.pdf")
 
 ##########################################################################
 # Area Ergebnisse erfassen
@@ -580,13 +580,15 @@ def ergebnis_erfassen_suche(request):
 
         try:
             teilnehmer = Teilnehmer.objects.get(id=startnummer, teilnehmer_liga_tag=ligatag.ligatag)
-            try:
-                ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
-                logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} ändern (edit)")
-                return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/')
-            except:
-                logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} neu anlegen (add)")
-                return redirect("/ligaturnen/add/ergebnis" + "/")
+            #try:
+            #    ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer=startnummer)
+            #    logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} ändern (edit)")
+            #    return redirect("/ligaturnen/edit/ergebnis/" + str(ergebnis.id) + '/')
+            #except:
+            #    logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} neu anlegen (add)")
+            #    return redirect("/ligaturnen/add/ergebnis" + "/")
+            logger.info(f"{request.user} will Startnummer: {startnummer} für Gerät: {geraete_id} erfassen")
+            return redirect("/ligaturnen/update_or_create/ergebnis" + "/")
 
         except:
             form = ErgebnisTeilnehmerSuchen()
@@ -607,7 +609,7 @@ def ergebnis_erfassen_suche(request):
             teilnehmer_id = ""
 
         if teilnehmer_id:
-            ergebnis = LigaturnenErgebnisse.objects.get(id=teilnehmer_id)
+            ergebnis = LigaturnenErgebnisse.objects.get(ergebnis_teilnehmer_id=teilnehmer_id)
         else:
             ergebnis = ""
         form = ErgebnisTeilnehmerSuchen()
@@ -689,6 +691,49 @@ def edit_ergebnis(request, id=None):
     return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
 
 
+@login_required
+@permission_required('ligaturnen.add_ligaturnenergebnisse')
+def update_or_create_ergebnis(request):
+    if request.method == "POST":
+        #item = get_object_or_404(LigaturnenErgebnisse, ergebnis_teilnehmer_id=request.session['startnummer'])
+        form = ErgebnisTeilnehmererfassenForm(request.POST)
+        if form.is_valid():
+            # Extrahiere Daten aus dem Formular
+            form_data = form.cleaned_data
+
+            # Verwende die Daten, um das Objekt zu aktualisieren oder zu erstellen
+            obj, created = LigaturnenErgebnisse.objects.update_or_create(
+                defaults=form_data,
+                ergebnis_teilnehmer=form_data['ergebnis_teilnehmer']
+            )
+            logger.info(f"{request.user} hat für Startnummer: {request.session['startnummer']} das Ergebnis {form_data} gespeichert.")
+            request.session['teilnehmer'] = request.session['startnummer']
+            return redirect('/ligaturnen/ergebnis_erfassen_suche/')
+    else:
+        teilnehmer = Teilnehmer.objects.get(id=request.session['startnummer'])
+        ligatag = LigaTag.objects.get(id=1)
+        try:
+            item = get_object_or_404(LigaturnenErgebnisse, ergebnis_teilnehmer_id=request.session['startnummer'])
+            form = ErgebnisTeilnehmererfassenForm(request.POST or None, instance=item)
+        except:
+            form = ErgebnisTeilnehmererfassenForm(request.POST)
+            form.add = True
+            #assert False
+
+        form.turnerin = teilnehmer.teilnehmer_name + " " + teilnehmer.teilnehmer_vorname
+        form.teilnehmer_id = teilnehmer.id
+        form.sprung = teilnehmer.teilnehmer_sprung
+        form.mini = teilnehmer.teilnehmer_mini
+        form.reck = teilnehmer.teilnehmer_reck_stufenbarren
+        form.balken = teilnehmer.teilnehmer_balken
+        form.barren = teilnehmer.teilnehmer_barren
+        form.boden = teilnehmer.teilnehmer_boden
+        form.geraet = request.session['geraet']
+        form.ligatag = ligatag
+        #form.add = False  # Damit im Formular die hidden Felder eingeblendet werden
+    return render(request, 'ligaturnen/ergebnis_erfassen.html', {'form': form})
+
+
 class ErgebnisseList(PermissionRequiredMixin, ListView):
     permission_required = "ligaturnen.add_ligaturnenergebnisse"
     model = LigaturnenErgebnisse
@@ -707,7 +752,7 @@ class ErgebnisseList(PermissionRequiredMixin, ListView):
 @permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_auswertung_mannschaft(request):
     ligen = Ligen.objects.all()
-    vereine = Vereine.objects.all()
+    vereine = Vereine.objects.filter(verein_aktiv=True)
     ligaTag = LigaTag.objects.get(id=1)
     configuration = Konfiguration.objects.get(id=1)
 
@@ -1410,8 +1455,8 @@ def report_auswertung_einzel(request):
 @permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_urkunde_mannschaft(request):
     ligen = Ligen.objects.all()
-    vereine = Vereine.objects.all()
-    ligaTag = LigaTag.objects.get(id=1)
+    #vereine = Vereine.objects.all()
+    #ligaTag = LigaTag.objects.get(id=1)
 
     gender = ['w', 'm']
 
@@ -1591,7 +1636,7 @@ def report_urkunde_einzel(request):
 @login_required
 @permission_required('ligaturnen.add_ligaturnenergebnisse')
 def report_auswertung_vereine(request):
-    vereine = Vereine.objects.all()
+    vereine = Vereine.objects.filter(verein_aktiv=True)
     ligaTag = LigaTag.objects.get(id=1)
 
     font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
@@ -1878,7 +1923,7 @@ def check_rules(request):
     mannschaften = [1, 2, 3]
     #ligen = ['A', 'B', 'C', 'D', 'E', 'F']
     ligen = Ligen.objects.all().order_by('liga')
-    vereine = Vereine.objects.all()
+    vereine = Vereine.objects.filter(verein_aktiv=True)
     ligatag = LigaTag.objects.get()
     mannschaft_error = []
     for verein in vereine:
