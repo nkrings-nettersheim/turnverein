@@ -1216,14 +1216,11 @@ def report_auswertung_einzel(request):
 
             ergebnisse = LigaturnenErgebnisse.objects.filter(
                 ergebnis_teilnehmer__teilnehmer_gender=gen,
-                ergebnis_teilnehmer__teilnehmer_liga=liga,
-                ergebnis_ligatag=1
+                ergebnis_teilnehmer__teilnehmer_liga=liga
             ).order_by('-ergebnis_summe')
 
-            h = 1
-
             if ergebnisse:
-
+                h = 1
                 p.setFont('DejaVuSans-Bold', 24)
                 p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr))
                 h = h + 1
@@ -1238,8 +1235,14 @@ def report_auswertung_einzel(request):
 
                 p.drawCentredString(breite / 2, hoehe - (h * cm), liga.liga + "-Liga, " + gen_long)
 
+            ergebnisse = LigaturnenErgebnisse.objects.filter(
+                ergebnis_teilnehmer__teilnehmer_gender=gen,
+                ergebnis_teilnehmer__teilnehmer_liga=liga,
+                ergebnis_ligatag=1
+            ).order_by('-ergebnis_summe')
 
 
+            if ergebnisse:
                 p.setFont('DejaVuSans', 8)
 
                 h = h + 1
