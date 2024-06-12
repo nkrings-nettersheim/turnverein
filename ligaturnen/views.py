@@ -1220,8 +1220,10 @@ def report_auswertung_einzel(request):
                 ergebnis_ligatag=1
             ).order_by('-ergebnis_summe')
 
+            h = 1
+
             if ergebnisse:
-                h = 1
+
                 p.setFont('DejaVuSans-Bold', 24)
                 p.drawCentredString(breite / 2, hoehe - (h * cm), "Ligawettkampf " + str(configuration.liga_jahr))
                 h = h + 1
