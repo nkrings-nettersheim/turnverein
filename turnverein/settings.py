@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd Party
-    'bootstrap5',
+    #'bootstrap5',
+    'django_bootstrap5',
     'fontawesomefree',
     'crispy_forms',
     'crispy_bootstrap5',
