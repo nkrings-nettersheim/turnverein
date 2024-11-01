@@ -46,7 +46,7 @@ class Meisterschaften(models.Model):
     meisterschaft_bis = models.DateField(default='1900-01-01')
 
     def __str__(self):
-        return self.meisterschaft + " " + self.meisterschaft_gender
+        return self.meisterschaft + " " + self.get_meisterschaft_gender_display()
 
 
 #Bei der nächsten Bereinigung kann dieses Model komplett entfernt werden

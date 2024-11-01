@@ -32,7 +32,8 @@ urlpatterns = [
 
     path('geraetelisten/', views.report_geraetelisten, name='geraetelisten'),
     path('auswertung/', views.report_auswertung, name='auswertung'),
-    path('urkunden/', views.report_urkunden, name='urkunden'),
+    path('urkunden/', views.report_urkunden_jahrgang, name='urkunden'),
+    path('meisterschaften/', views.report_meisterschaften, name='meisterschaften'),
     path('auswertung_vereine/', views.report_auswertung_vereine, name='auswertung_vereine'),
 
     path('delete_tables/', views.delete_tables_bezirksturnfest, name='delete_tables'),

@@ -41,6 +41,7 @@ from .forms import UploadFileForm, ErgebnisTeilnehmerSuchen, VereinErfassenForm,
 
 logger = logging.getLogger(__name__)
 
+
 # assert False
 
 ##########################################################################
@@ -50,7 +51,9 @@ logger = logging.getLogger(__name__)
 def index(request):
     conf_liegaturnen = ligaturnen.models.Konfiguration.objects.get(id=1)
     conf_bezirksturnfest = Konfiguration.objects.get(id=1)
-    return render(request, 'turnfest/index.html', {'conf_bezirksturnfest': conf_bezirksturnfest, 'conf_ligaturnen': conf_liegaturnen})
+    return render(request, 'turnfest/index.html',
+                  {'conf_bezirksturnfest': conf_bezirksturnfest, 'conf_ligaturnen': conf_liegaturnen})
+
 
 @login_required
 @permission_required('turnfest.view_bezirksturnfestergebnisse')
@@ -59,6 +62,7 @@ def bezirksturnfest(request):
     request.session['teilnehmer'] = ""
 
     return render(request, 'turnfest/bezirksturnfest.html')
+
 
 @login_required
 @permission_required('ligaturnen.view_ligaturnenergebnisse')
@@ -109,6 +113,7 @@ class VereineDeleteView(PermissionRequiredMixin, DeleteView):
     template_name = "turnfest/vereine_delete.html"
     success_url = reverse_lazy("turnfest:vereine_list")
 
+
 @login_required
 @permission_required('turnfest.view_vereine')
 def report_vereine(request):
@@ -129,6 +134,7 @@ def report_vereine(request):
 
     return response
 
+
 @login_required
 @permission_required('turnfest.view_vereine')
 def vereine_upload(request):
@@ -140,6 +146,7 @@ def vereine_upload(request):
     else:
         form = UploadFileForm()
     return render(request, 'turnfest/vereine_upload.html', {'form': form})
+
 
 def vereine_handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
@@ -199,6 +206,7 @@ class TeilnehmerDeleteView(PermissionRequiredMixin, DeleteView):
     template_name = "turnfest/teilnehmer_delete.html"
     success_url = reverse_lazy("turnfest:teilnehmer_list")
 
+
 @login_required
 @permission_required('turnfest.view_teilnehmer')
 def teilnehmer_upload(request):
@@ -218,6 +226,7 @@ def teilnehmer_upload(request):
         request.session['name_fault'] = ""
         form = UploadFileForm()
     return render(request, 'turnfest/teilnehmer_upload.html', {'form': form})
+
 
 def handle_uploaded_file(file):
     # Lese die Daten aus der Excel-Datei
@@ -264,7 +273,7 @@ def handle_uploaded_file(file):
             except:
                 count_negativ = count_negativ + 1
         else:
-            name_fault = row['Nachname'] + " "+ row['Vorname']
+            name_fault = row['Nachname'] + " " + row['Vorname']
             countdict = {"count_positiv": count_positiv, "count_negativ": count_negativ, "name_fault": name_fault}
             return countdict
 
@@ -357,7 +366,8 @@ def report_geraetelisten(request):
                                                                                  'teilnehmer_verein__verein_name_kurz',
                                                                                  'teilnehmer_geburtsjahr',
                                                                                  'teilnehmer_reck_stufenbarren'
-                                                                                 ).order_by('teilnehmer_reck_stufenbarren')
+                                                                                 ).order_by(
+                    'teilnehmer_reck_stufenbarren')
             elif geraet.geraet_db_name == "teilnehmer_balken":
                 teilnehmer_alle = Teilnehmer.objects.filter(
                     teilnehmer_balken__gt=0,
@@ -508,6 +518,7 @@ def add_ergebnis(request):
         form.geraet = request.session['geraet']
         form.add = True  # Damit im Formular die hidden Felder eingeblendet werden
     return render(request, 'turnfest/ergebnis_erfassen.html', {'form': form})
+
 
 @login_required
 @permission_required('turnfest.change_bezirksturnfestergebnisse')
@@ -719,6 +730,7 @@ def report_auswertung(request):
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="Ergebnislisten.pdf")
 
+
 @login_required
 @permission_required('turnfest.view_bezirksturnfestergebnisse')
 def report_urkunden(request):
@@ -739,6 +751,7 @@ def report_urkunden(request):
 
     # Holen der Seitenabmessung
     breite, hoehe = A4
+    hoehe_start = hoehe + 50
 
     for meisterschaft in meisterschaften:
         ergebnisse = BezirksturnfestErgebnisse.objects.filter(
@@ -769,36 +782,289 @@ def report_urkunden(request):
 
             h = 18
             p.setFont('DejaVuSans-Bold', 18)
-            p.drawCentredString(breite / 2, hoehe - (h * cm), konfiguration.bezirksturnfest + " " +str(konfiguration.jahr))
-            h = h + 1
-            p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft)
-            h = h + 1
-            p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft_gender)
-            h = h + 1
-            p.drawCentredString(breite / 2, hoehe - (h * cm), medaille)
-            h = h + 1
-            p.drawCentredString(breite / 2, hoehe - (h * cm), "Jahrgang: " + str(jahr))
-            h = h + 1
+            #p.drawCentredString(breite / 2, hoehe - (h * cm), konfiguration.bezirksturnfest + " " +str(konfiguration.jahr))
+            #h = h + 1
+            #p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft)
+            #h = h + 1
+            #p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft_gender)
+            #h = h + 1
+            #p.drawCentredString(breite / 2, hoehe - (h * cm), medaille)
+            #h = h + 1
+            #p.drawCentredString(breite / 2, hoehe - (h * cm), "Jahrgang: " + str(jahr))
+            #h = h + 1
 
+            #if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+            #    rang = rang - 1
+            #    p.drawCentredString(breite / 2, hoehe - (h * cm), "Rang: " + str(rang))
+            #    rang = rang + 1
+            #else:
+            #    p.drawCentredString(breite / 2, hoehe - (h * cm), "Rang: " + str(rang))
+
+            #h = h + 1
+            #p.drawCentredString(breite / 2, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer))
+
+            #ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+            #rang = rang + 1
+            p.setFont('DejaVuSans', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (17 * cm),
+                                str(meisterschaft))
+
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (18 * cm),
+                                str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname) + " " +
+                                str(ergebnis.ergebnis_teilnehmer.teilnehmer_name))
+
+            p.setFont('DejaVuSans', 18)
+
+            p.drawCentredString(breite / 2, hoehe_start - (19 * cm),
+                                " *" + str(
+                                    datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr),
+                                                      "%Y-%m-%d").year))
+            p.drawCentredString(breite / 2, hoehe_start - (20 * cm),
+                                str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+
+            p.drawCentredString(breite / 2, hoehe_start - (21 * cm),
+                                "erreichte eine Gesamtpunktzahl von:")
+
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (22 * cm), str(ergebnis.ergebnis_summe) + " Punkten")
+
+            p.setFont('DejaVuSans-Bold', 18)
             if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
                 rang = rang - 1
-                p.drawCentredString(breite / 2, hoehe - (h * cm), "Rang: " + str(rang))
+                p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "Rang: " + str(rang))
                 rang = rang + 1
             else:
-                p.drawCentredString(breite / 2, hoehe - (h * cm), "Rang: " + str(rang))
+                p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "Rang: " + str(rang))
 
-            h = h + 1
-            p.drawCentredString(breite / 2, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer))
+            #p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "und damit " + str(ergebnis.ergebnis_summe)) + " Punkten"
+            #p.setFont('DejaVuSans', 18)
+            #p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "Punkten")
 
-            ergebnis_summe_vorheriger = ergebnis.ergebnis_summe
+            p.setFont('DejaVuSans', 12)
+            p.drawCentredString(breite / 2, hoehe_start - (24 * cm), "Einzelergebnisse:")
+
+            p.setFont('DejaVuSans', 10)
+            p.drawString(5.0 * cm, hoehe_start - (25 * cm), 'Schwebebalken:')
+            p.drawString(5.0 * cm, hoehe_start - (25.5 * cm), 'Reck/Stufenbarren:')
+            p.drawString(5.0 * cm, hoehe_start - (26 * cm), 'Minitrampolin:')
+
+            p.drawString(9.0 * cm, hoehe_start - (25 * cm), str(ergebnis.ergebnis_balken_s))
+            p.drawString(9.0 * cm, hoehe_start - (25.5 * cm), str(ergebnis.ergebnis_reck_s))
+            p.drawString(9.0 * cm, hoehe_start - (26 * cm), str(ergebnis.ergebnis_mini_s))
+
+            p.drawString(13.0 * cm, hoehe_start - (25 * cm), 'Boden:')
+            p.drawString(13.0 * cm, hoehe_start - (25.5 * cm), 'Barren:')
+            p.drawString(13.0 * cm, hoehe_start - (26 * cm), 'Sprung:')
+
+            p.drawString(15.0 * cm, hoehe_start - (25 * cm), str(ergebnis.ergebnis_boden_s))
+            p.drawString(15.0 * cm, hoehe_start - (25.5 * cm), str(ergebnis.ergebnis_barren_s))
+            p.drawString(15.0 * cm, hoehe_start - (26 * cm), str(ergebnis.ergebnis_sprung_s))
+
             rang = rang + 1
-            p.showPage()
+            p.showPage()  # Erzwingt eine neue Seite
 
     # Close the PDF object cleanly, and we're done.
     p.save()
 
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="Urkunden_Bezirksturnfest.pdf")
+
+
+@login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
+def report_urkunden_jahrgang(request):
+    meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
+    konfiguration = Konfiguration.objects.get(id=1)
+
+    GENDER = ('w', 'm')
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans-Bold.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", font_path))
+
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer, pagesize=A4)
+
+    # Holen der Seitenabmessung
+    breite, hoehe = A4
+    hoehe_start = hoehe + 50
+
+
+    for gen in GENDER:
+        for jahrgang in range(2000, 2100):
+            ergebnisse = BezirksturnfestErgebnisse.objects.filter(
+                ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(jahrgang) + "-01-01",
+                ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(jahrgang) + "-12-31",
+                ergebnis_teilnehmer__teilnehmer_gender=gen
+            ).order_by('-ergebnis_summe')
+            if ergebnisse:
+                #jahr_2 = ""
+                rang = 1
+                ergebnis_summe_vorheriger = 0
+                for ergebnis in ergebnisse:
+                    h = 15
+                    #jahr = datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr), "%Y-%m-%d").year
+                    #if jahr != jahr_2:
+                    #    jahr_2 = jahr
+                    #    rang = 1
+                    #    ergebnis_summe_vorheriger = 0
+
+                    if 16 <= ergebnis.ergebnis_summe < 48:
+                        medaille = 'Bronze'
+                    elif 48 <= ergebnis.ergebnis_summe < 64:
+                        medaille = 'Silber'
+                    elif ergebnis.ergebnis_summe >= 64:
+                        medaille = 'Gold'
+                    else:
+                        medaille = "-"
+
+                    h = 18
+                    p.setFont('DejaVuSans-Bold', 18)
+                    p.setFont('DejaVuSans', 18)
+
+                    p.setFont('DejaVuSans-Bold', 18)
+                    p.drawCentredString(breite / 2, hoehe_start - (18 * cm),
+                                        str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname) + " " +
+                                        str(ergebnis.ergebnis_teilnehmer.teilnehmer_name))
+
+                    p.setFont('DejaVuSans', 18)
+
+                    #p.drawCentredString(breite / 2, hoehe_start - (19 * cm),
+                    #                    " *" + str(
+                    #                        datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr),
+                    #                                          "%Y-%m-%d").year))
+
+                    p.drawCentredString(breite / 2, hoehe_start - (19 * cm),
+                                        str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+
+                    p.drawCentredString(breite / 2, hoehe_start - (21 * cm),
+                                        "erreicht eine Gesamtpunktzahl von " + str(ergebnis.ergebnis_summe) + " Punkten und ")
+
+                    #p.setFont('DejaVuSans-Bold', 18)
+                    #p.drawCentredString(breite / 2, hoehe_start - (22 * cm), "damit im Jahrgang " + jahrgang + " den " + rang + ". Rang")
+
+
+                    #p.setFont('DejaVuSans-Bold', 18)
+                    if ergebnis_summe_vorheriger == ergebnis.ergebnis_summe:
+                        rang = rang - 1
+                        p.drawCentredString(breite / 2, hoehe_start - (22 * cm), "damit im Jahrgang " + str(jahrgang) + " den " + str(rang) + ". Rang")
+                        rang = rang + 1
+                    else:
+                        p.drawCentredString(breite / 2, hoehe_start - (22 * cm), "damit im Jahrgang " + str(jahrgang) + " den " + str(rang) + ". Rang")
+
+
+
+                    #p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "und damit " + str(ergebnis.ergebnis_summe)) + " Punkten"
+                    #p.setFont('DejaVuSans', 18)
+                    #p.drawCentredString(breite / 2, hoehe_start - (23 * cm), "Punkten")
+
+                    p.setFont('DejaVuSans', 12)
+                    p.drawCentredString(breite / 2, hoehe_start - (23.5 * cm), "Einzelergebnisse:")
+
+                    p.setFont('DejaVuSans', 10)
+                    p.drawString(5.0 * cm, hoehe_start - (24 * cm), 'Schwebebalken:')
+                    p.drawString(5.0 * cm, hoehe_start - (24.5 * cm), 'Reck/Stufenbarren:')
+                    p.drawString(5.0 * cm, hoehe_start - (25 * cm), 'Minitrampolin:')
+
+                    p.drawString(9.0 * cm, hoehe_start - (24 * cm), str(ergebnis.ergebnis_balken_s))
+                    p.drawString(9.0 * cm, hoehe_start - (24.5 * cm), str(ergebnis.ergebnis_reck_s))
+                    p.drawString(9.0 * cm, hoehe_start - (25 * cm), str(ergebnis.ergebnis_mini_s))
+
+                    p.drawString(13.0 * cm, hoehe_start - (24 * cm), 'Boden:')
+                    p.drawString(13.0 * cm, hoehe_start - (24.5 * cm), 'Barren:')
+                    p.drawString(13.0 * cm, hoehe_start - (25 * cm), 'Sprung:')
+
+                    p.drawString(15.0 * cm, hoehe_start - (24 * cm), str(ergebnis.ergebnis_boden_s))
+                    p.drawString(15.0 * cm, hoehe_start - (24.5 * cm), str(ergebnis.ergebnis_barren_s))
+                    p.drawString(15.0 * cm, hoehe_start - (25 * cm), str(ergebnis.ergebnis_sprung_s))
+
+                    rang = rang + 1
+
+                    if medaille != "-":
+                        p.setFont('DejaVuSans-Bold', 16)
+                        p.drawCentredString(breite / 2, hoehe_start - (27 * cm), "Abzeichen: " + medaille)
+
+                    p.showPage()  # Erzwingt eine neue Seite
+
+    # Close the PDF object cleanly, and we're done.
+    p.save()
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=False, filename="Urkunden_Bezirksturnfest.pdf")
+
+
+@login_required
+@permission_required('turnfest.view_bezirksturnfestergebnisse')
+def report_meisterschaften(request):
+    meisterschaften = Meisterschaften.objects.order_by('-meisterschaft_gender')
+    konfiguration = Konfiguration.objects.get(id=1)
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans-Bold.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", font_path))
+
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer, pagesize=A4)
+
+    # Holen der Seitenabmessung
+    breite, hoehe = A4
+    hoehe_start = hoehe + 50
+
+    for meisterschaft in meisterschaften:
+        ergebnis = BezirksturnfestErgebnisse.objects.filter(
+            ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
+            ergebnis_teilnehmer__teilnehmer_geburtsjahr__lte=str(meisterschaft.meisterschaft_bis),
+            ergebnis_teilnehmer__teilnehmer_gender=meisterschaft.meisterschaft_gender
+        ).order_by('-ergebnis_summe').first()
+
+        if ergebnis:
+            p.setFont('DejaVuSans-Bold', 18)
+
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (20 * cm),
+                                str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname) + " " +
+                                str(ergebnis.ergebnis_teilnehmer.teilnehmer_name))
+
+            p.setFont('DejaVuSans', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (21 * cm),
+                                str(ergebnis.ergebnis_teilnehmer.teilnehmer_verein.verein_name_kurz))
+
+            p.drawCentredString(breite / 2, hoehe_start - (22 * cm),
+                                "hat mit " + str(ergebnis.ergebnis_summe) + " Punkten die:")
+
+            p.setFont('DejaVuSans-Bold', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (23 * cm),
+                                str(meisterschaft.meisterschaft))
+            p.drawCentredString(breite / 2, hoehe_start - (24 * cm),
+                                str(meisterschaft.get_meisterschaft_gender_display()))
+
+            p.setFont('DejaVuSans', 18)
+            p.drawCentredString(breite / 2, hoehe_start - (25 * cm),
+                                "gewonnen.")
+
+            #p.drawCentredString(breite / 2, hoehe_start - (23 * cm),
+            #                    " *" + str(
+            #                        datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr), "%Y-%m-%d").year))
+
+            p.showPage()  # Erzwingt eine neue Seite
+
+    # Close the PDF object cleanly, and we're done.
+    p.save()
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=False, filename="Urkunden_Meisterschaften.pdf")
+
 
 @login_required
 @permission_required('turnfest.view_bezirksturnfestergebnisse')
@@ -873,6 +1139,7 @@ def report_auswertung_vereine(request):
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="Ergebnislisten_Vereine.pdf")
 
+
 ##########################################################################
 # Area Löschen Bezirksturnfest
 ##########################################################################
@@ -900,7 +1167,6 @@ def delete_tables_bezirksturnfest(request):
             with connection.cursor() as cursor:
                 cursor.execute(
                     "ALTER TABLE turnfest_teilnehmer AUTO_INCREMENT = 1;")
-
 
         return redirect('/turnfest/teilnehmer_list/')
     else:
