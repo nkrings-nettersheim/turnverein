@@ -249,7 +249,7 @@ class MeisterschaftenModelTest(TestCase):
 
     def test_object_name_is_meisterschaft(self):
         meisterschaften = Meisterschaften.objects.get(id=1)
-        expected_object_name = f'{meisterschaften.meisterschaft} {meisterschaften.meisterschaft_gender}'
+        expected_object_name = f'{meisterschaften.meisterschaft} {meisterschaften.get_meisterschaft_gender_display}'
         self.assertEqual(str(meisterschaften), expected_object_name)
 
 

@@ -5,6 +5,7 @@ import logging
 
 import pandas as pd
 from datetime import datetime
+from dateutil import parser
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
@@ -240,37 +241,78 @@ def handle_uploaded_file(file):
         counter_geraet = 0
         name_fault = ''
 
-        if row['Sprung'] > 0:
+        if isinstance(row['Sprung'], int):
+            Sprung = row['Sprung']
+        else:
+            Sprung = 0
+
+        if isinstance(row['Minitrampolin'], int):
+            Minitrampolin = row['Minitrampolin']
+        else:
+            Minitrampolin = 0
+
+        if isinstance(row['Reck_Stufenbarren'], int):
+            Reck_Stufenbarren = row['Reck_Stufenbarren']
+        else:
+            Reck_Stufenbarren = 0
+
+        if isinstance(row['Schwebebalken'], int):
+            Schwebebalken = row['Schwebebalken']
+        else:
+            Schwebebalken = 0
+
+        if isinstance(row['Barren'], int):
+            Barren = row['Barren']
+        else:
+            Barren = 0
+
+        if isinstance(row['Boden'], int):
+            Boden = row['Boden']
+        else:
+            Boden = 0
+
+        if Sprung > 0:
             counter_geraet = counter_geraet + 1
-        if row['Minitrampolin'] > 0:
+        if Minitrampolin > 0:
             counter_geraet = counter_geraet + 1
-        if row['Reck_Stufenbarren'] > 0:
+        if Reck_Stufenbarren > 0:
             counter_geraet = counter_geraet + 1
-        if row['Schwebebalken'] > 0:
+        if Schwebebalken > 0:
             counter_geraet = counter_geraet + 1
-        if row['Barren'] > 0:
+        if Barren > 0:
             counter_geraet = counter_geraet + 1
-        if row['Boden'] > 0:
+        if Boden > 0:
             counter_geraet = counter_geraet + 1
+
+        Geburtsjahr = str(row['Geburtsjahr'])
+
+
+
+        if len(Geburtsjahr) == 4:
+            Geburtsjahr = Geburtsjahr + "-01-01"
+        else:
+            datum_obj = parser.parse(Geburtsjahr)
+            Geburtsjahr = datum_obj.strftime("%Y-%m-%d")
 
         if counter_geraet <= 4:
             Teilnehmer_neu = Teilnehmer(teilnehmer_name=row['Nachname'],
                                         teilnehmer_vorname=row['Vorname'],
                                         teilnehmer_gender=row['Geschlecht'],
-                                        teilnehmer_geburtsjahr=row['Geburtsjahr'],
+                                        teilnehmer_geburtsjahr=Geburtsjahr,
                                         teilnehmer_verein_id=row['Verein'],
                                         teilnehmer_anwesend="True",
-                                        teilnehmer_sprung=row['Sprung'],
-                                        teilnehmer_mini=row['Minitrampolin'],
-                                        teilnehmer_reck_stufenbarren=row['Reck_Stufenbarren'],
-                                        teilnehmer_balken=row['Schwebebalken'],
-                                        teilnehmer_barren=row['Barren'],
-                                        teilnehmer_boden=row['Boden'],
+                                        teilnehmer_sprung=Sprung,
+                                        teilnehmer_mini=Minitrampolin,
+                                        teilnehmer_reck_stufenbarren=Reck_Stufenbarren,
+                                        teilnehmer_balken=Schwebebalken,
+                                        teilnehmer_barren=Barren,
+                                        teilnehmer_boden=Boden,
                                         )
             try:
                 Teilnehmer_neu.save()
                 count_positiv = count_positiv + 1
-            except:
+            except Exception as inst:
+                logger.info(inst.args)
                 count_negativ = count_negativ + 1
         else:
             name_fault = row['Nachname'] + " " + row['Vorname']
@@ -996,7 +1038,7 @@ def report_urkunden_jahrgang(request):
     p.save()
 
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=False, filename="Urkunden_Bezirksturnfest.pdf")
+    return FileResponse(buffer, as_attachment=True, filename="Urkunden_Bezirksturnfest.pdf")
 
 
 @login_required
@@ -1063,7 +1105,7 @@ def report_meisterschaften(request):
     p.save()
 
     buffer.seek(0)
-    return FileResponse(buffer, as_attachment=False, filename="Urkunden_Meisterschaften.pdf")
+    return FileResponse(buffer, as_attachment=True, filename="Urkunden_Meisterschaften.pdf")
 
 
 @login_required
