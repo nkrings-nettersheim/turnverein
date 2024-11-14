@@ -9,8 +9,12 @@
         <a class="nav-link" href="{% url 'turnfest:bezirksturnfest'%}">Bezirksturnfest</a>
       </li>
     {% if perms.turnfest.view_teilnehmer %}
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'turnfest:teilnehmer_list'%}">Teilnehmer</a>
+      <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Teilnehmer</a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'turnfest:teilnehmer_list'%}">Teilnehmer</a></li>
+                <li><a class="dropdown-item" href="{% url 'turnfest:meldungen'%}">Meldungen je Verein</a></li>
+            </ul>
       </li>
     {% endif %}
     {% if perms.turnfest.view_teilnehmer %}

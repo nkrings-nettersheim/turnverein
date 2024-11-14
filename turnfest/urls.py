@@ -31,6 +31,7 @@ urlpatterns = [
     path('ergebnisse_list/', views.ErgebnisseList.as_view(), name='ergebnisse_list'),
 
     path('geraetelisten/', views.report_geraetelisten, name='geraetelisten'),
+    path('meldungen/', views.report_meldungen_vereine, name='meldungen'),
     path('auswertung/', views.report_auswertung, name='auswertung'),
     path('urkunden/', views.report_urkunden_jahrgang, name='urkunden'),
     path('meisterschaften/', views.report_meisterschaften, name='meisterschaften'),

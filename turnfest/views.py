@@ -10,6 +10,7 @@ from dateutil import parser
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import F
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views.generic import ListView, DetailView
@@ -341,7 +342,7 @@ def report_geraetelisten(request):
     pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", font_path))
 
     response = HttpResponse(content_type='application/pdf')
-    # response['Content-Disposition'] = 'inline; filename="Wettkampfliste.pdf"'
+    #response['Content-Disposition'] = 'inline; filename="Wettkampfliste.pdf"'
     response['Content-Disposition'] = 'attachment; filename="Wettkampfliste.pdf"'
 
     # Create the PDF object, using the buffer as its "file."
@@ -364,6 +365,11 @@ def report_geraetelisten(request):
     styles.add(ParagraphStyle(name='CenterAlign14',
                               fontName='DejaVuSans-Bold',
                               fontSize=14,
+                              alignment=TA_CENTER))
+
+    styles.add(ParagraphStyle(name='CenterAlign12',
+                              fontName='DejaVuSans-Bold',
+                              fontSize=12,
                               alignment=TA_CENTER))
 
     normal_style = styles['Normal']
@@ -462,16 +468,18 @@ def report_geraetelisten(request):
                            'Summe']
                 table_data = [headers] + [list(row) + [''] * (len(headers) - len(row)) for row in teilnehmer_alle]
                 if table_data:
-                    t = Table(table_data)
+                    t = Table(table_data, colWidths=[40, 100, 100, 70, 60, 40, 40, 40, 40])
                     content.append(t)
                     content.append(Spacer(1, 4))
-                t.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, -1), colors.white),
-                                       ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                                       ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-                                       ('FONT', (0, 0), (-1, -1), 'DejaVuSans'),
-                                       ('ALIGN', (0, 0), (0, -1), 'CENTER'),
-                                       ('ALIGN', (5, 0), (5, -1), 'CENTER')
-                                       ]))
+                    t.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, -1), colors.white),
+                        ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                        ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+                        ('FONT', (0, 0), (-1, -1), 'DejaVuSans'),
+                        ('FONTSIZE', (0, 0), (-1, -1), 8),
+                        ('ALIGN', (0, 0), (0, -1), 'CENTER'),
+                        ('ALIGN', (5, 0), (5, -1), 'CENTER')
+                    ]))
 
                 content.append(Paragraph(
                     "*: A-Note nur eintragen, wenn es eine Änderung zur Meldung gegeben hat!", normal_style))
@@ -484,6 +492,108 @@ def report_geraetelisten(request):
 
     return response
 
+
+@login_required
+@permission_required('turnfest.view_teilnehmer')
+def report_meldungen_vereine(request):
+    konfiguration = Konfiguration.objects.get(id=1)
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans", font_path))
+
+    font_path = BASE_DIR / "ttf/dejavu-sans/ttf/DejaVuSans-Bold.ttf"
+    pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", font_path))
+
+    # Create a file-like buffer to receive PDF data.
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer, pagesize=A4)
+
+    # Holen der Seitenabmessung
+    breite, hoehe = A4
+
+    vereine = Vereine.objects.filter(verein_aktiv=True)
+    riegen = Riegen.objects.all()
+
+    for verein in vereine:
+
+        h = 1
+        p.setFont('DejaVuSans-Bold', 18)
+        p.drawCentredString(breite / 2, hoehe - (h * cm), konfiguration.bezirksturnfest + " " + str(konfiguration.jahr))
+        h = h + 1
+        p.drawCentredString(breite / 2, hoehe - (h * cm), "Meldungen " + str(verein))
+        h = h + 1
+
+        p.setFont('DejaVuSans', 8)
+
+        p.setFillGray(0.75)
+        p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+
+        p.setFillGray(0.0)
+        p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Teilnehmer/in')
+        p.drawString(5.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Jahrgang')
+        p.drawString(8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Sprung')
+        p.drawString(9.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
+        p.drawString(11.2 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
+        p.drawString(12.8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
+        p.drawString(14.4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
+        p.drawString(16.0 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
+        anzahl_teilnehmer = 0
+        for riege in riegen:
+            ergebnisse = (Teilnehmer.objects.filter(teilnehmer_verein=verein,
+                                                    teilnehmer_geburtsjahr__range=[riege.riege_ab,
+                                                   riege.riege_bis]).
+                          order_by('teilnehmer_geburtsjahr'))
+            p.setFont('DejaVuSans-Bold', 8)
+            h = h + 1
+            p.drawString(1.5 * cm, hoehe -(h *cm), str(riege))
+            p.setFont('DejaVuSans', 8)
+            for ergebnis in ergebnisse:
+                if h > 24:
+                    p.showPage()
+                    h = 1
+                    p.setFont('DejaVuSans', 8)
+
+                    p.setFillGray(0.75)
+                    p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+
+                    p.setFillGray(0.0)
+                    p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Teilnehmer/in')
+                    p.drawString(5.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Jahrgang')
+                    p.drawString(8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Sprung')
+                    p.drawString(9.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
+                    p.drawString(11.2 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
+                    p.drawString(12.8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
+                    p.drawString(14.4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
+                    p.drawString(16.0 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
+                    p.setFont('DejaVuSans', 8)
+
+
+                h = h + 0.4
+                jahr = datetime.strptime(str(ergebnis.teilnehmer_geburtsjahr), "%Y-%m-%d").year
+                p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_name) + " " +
+                             str(ergebnis.teilnehmer_vorname))
+                p.drawString(5.5 * cm, hoehe - (h * cm), str(jahr))
+                p.drawString(8 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_sprung))
+                p.drawString(9.6 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_mini))
+                p.drawString(11.2 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_reck_stufenbarren))
+                p.drawString(12.8 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_balken))
+                p.drawString(14.4 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_barren))
+                p.drawString(16.0 * cm, hoehe - (h * cm), str(ergebnis.teilnehmer_boden))
+                anzahl_teilnehmer = anzahl_teilnehmer + 1
+
+        p.setFont('DejaVuSans-Bold', 8)
+        h = h + 1
+        p.drawString(1.5 * cm, hoehe - (h * cm), "Anzahl gemeldete Teilnehmer: " + str(anzahl_teilnehmer))
+        p.setFont('DejaVuSans', 8)
+        p.showPage()  # Erzwingt eine neue Seite
+
+    # Close the PDF object cleanly, and we're done.
+    p.save()
+
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename="Meldungen_Vereine.pdf")
 
 ##########################################################################
 # Area Ergebnisse erfassen
