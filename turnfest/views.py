@@ -24,7 +24,7 @@ from reportlab.lib.enums import TA_CENTER
 
 from reportlab.lib.units import cm
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Table, TableStyle
@@ -744,6 +744,41 @@ def report_auswertung(request):
     # Holen der Seitenabmessung
     breite, hoehe = A4
 
+    count_bronze = BezirksturnfestErgebnisse.objects.filter(ergebnis_summe__range=(16, 48)).count()
+    count_silber = BezirksturnfestErgebnisse.objects.filter(ergebnis_summe__range=(48, 64)).count()
+    count_gold = BezirksturnfestErgebnisse.objects.filter(ergebnis_summe__range=(64, 1000)).count()
+    count_keine = BezirksturnfestErgebnisse.objects.filter(ergebnis_summe__range=(0, 16)).count()
+    print(f"Anzahl silber: {count_silber}")
+    print(f"Anzahl keine: {count_keine}")
+
+    h = 1
+    p.setFont('DejaVuSans-Bold', 18)
+    p.drawCentredString(breite / 2, hoehe - (h * cm), "Ergebnisliste Bezirksturnfest " + str(konfiguration.jahr))
+    h = h + 0.8
+    p.setFont('DejaVuSans-Bold', 14)
+    p.drawCentredString(breite / 2, hoehe - (h * cm), "Gesamtauswertung ")
+    h = h + 1
+
+    #p.setFont('DejaVuSans', 8)
+
+    p.setFillGray(0.75)
+    p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+    h = h + 2
+    p.setFillGray(0.0)
+    p.drawString(7 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gold-Medaillen:')
+    p.drawRightString(14.5 * cm, hoehe - (h * cm) + 0.2 * cm, str(count_gold))
+    h = h + 1
+    p.drawString(7 * cm, hoehe - (h * cm) + 0.2 * cm, 'Silber-Medaillen:')
+    p.drawRightString(14.5 * cm, hoehe - (h * cm) + 0.2 * cm, str(count_silber))
+    h = h + 1
+    p.drawString(7 * cm, hoehe - (h * cm) + 0.2 * cm, 'Bronze-Medaillen:')
+    p.drawRightString(14.5 * cm, hoehe - (h * cm) + 0.2 * cm, str(count_bronze))
+    h = h + 1
+    p.drawString(7 * cm, hoehe - (h * cm) + 0.2 * cm, 'keine Medaille:')
+    p.drawRightString(14.5 * cm, hoehe - (h * cm) + 0.2 * cm, str(count_keine))
+
+    p.showPage()
+
     for meisterschaft in meisterschaften:
 
         ergebnisse = (BezirksturnfestErgebnisse.objects.filter(
@@ -758,7 +793,7 @@ def report_auswertung(request):
         h = h + 0.8
         p.setFont('DejaVuSans-Bold', 14)
         p.drawCentredString(breite / 2, hoehe - (h * cm), meisterschaft.meisterschaft + " " +
-                            meisterschaft.meisterschaft_gender)
+                            meisterschaft.get_meisterschaft_gender_display())
         h = h + 1
 
         p.setFont('DejaVuSans', 8)
@@ -830,7 +865,9 @@ def report_auswertung(request):
 
             h = h + 0.5
             rang = rang + 1
-
+            if h > 24:
+                p.showPage()
+                h = 1
         if ergebnisse:
             h = h + 1
             p.line(0.2 * cm, hoehe - (h * cm), 20.8 * cm, hoehe - (h * cm))
@@ -841,7 +878,7 @@ def report_auswertung(request):
 
             p.setFillGray(0.0)
             p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm,
-                         meisterschaft.meisterschaft + " hallo " + meisterschaft.meisterschaft_gender)
+                         meisterschaft.meisterschaft + " " + meisterschaft.get_meisterschaft_gender_display())
 
             meister_innen = (BezirksturnfestErgebnisse.objects.filter(
                 ergebnis_teilnehmer__teilnehmer_geburtsjahr__gte=str(meisterschaft.meisterschaft_ab),
@@ -1233,10 +1270,10 @@ def report_auswertung_vereine(request):
     buffer = io.BytesIO()
 
     # Create the PDF object, using the buffer as its "file."
-    p = canvas.Canvas(buffer, pagesize=A4)
+    p = canvas.Canvas(buffer, pagesize=landscape(A4))
 
     # Holen der Seitenabmessung
-    breite, hoehe = A4
+    breite, hoehe = landscape(A4)
 
     vereine = Vereine.objects.filter(verein_aktiv=True)
 
@@ -1252,18 +1289,19 @@ def report_auswertung_vereine(request):
         p.setFont('DejaVuSans', 8)
 
         p.setFillGray(0.75)
-        p.rect(0.2 * cm, hoehe - (h * cm), 20.6 * cm, 0.6 * cm, stroke=0, fill=1)
+        p.rect(0.2 * cm, hoehe - (h * cm), 29.0 * cm, 0.6 * cm, stroke=0, fill=1)
 
         p.setFillGray(0.0)
-        p.drawString(1.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Teilnehmer/in')
+        p.drawString(0.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Teilnehmer/in')
         p.drawString(4.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Jahrgang')
         p.drawString(8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Sprung')
-        p.drawString(9.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
-        p.drawString(11.2 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
-        p.drawString(12.8 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
-        p.drawString(14.4 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
-        p.drawString(16.0 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
-        p.drawString(17.6 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+        p.drawString(11 * cm, hoehe - (h * cm) + 0.2 * cm, 'Minitr.')
+        p.drawString(14 * cm, hoehe - (h * cm) + 0.2 * cm, 'Reck/Stuf.')
+        p.drawString(17 * cm, hoehe - (h * cm) + 0.2 * cm, 'Balken')
+        p.drawString(20 * cm, hoehe - (h * cm) + 0.2 * cm, 'Barren')
+        p.drawString(23 * cm, hoehe - (h * cm) + 0.2 * cm, 'Boden')
+        p.drawString(26 * cm, hoehe - (h * cm) + 0.2 * cm, 'Gesamt')
+        p.drawString(27.5 * cm, hoehe - (h * cm) + 0.2 * cm, 'Medaille')
 
         ergebnisse = (BezirksturnfestErgebnisse.objects.filter(ergebnis_teilnehmer__teilnehmer_verein=verein).
                       order_by('ergebnis_teilnehmer__teilnehmer_geburtsjahr'))
@@ -1271,18 +1309,57 @@ def report_auswertung_vereine(request):
         for ergebnis in ergebnisse:
             h = h + 0.4
             jahr = datetime.strptime(str(ergebnis.ergebnis_teilnehmer.teilnehmer_geburtsjahr), "%Y-%m-%d").year
-            p.drawString(1.5 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer.teilnehmer_name) + " " +
+            p.drawString(0.5 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_teilnehmer.teilnehmer_name) + " " +
                          str(ergebnis.ergebnis_teilnehmer.teilnehmer_vorname))
-            p.drawString(4.5 * cm, hoehe - (h * cm),
-                         str(jahr))
-            p.drawString(8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_sprung_s))
-            p.drawString(9.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_mini_s))
-            p.drawString(11.2 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_reck_s))
-            p.drawString(12.8 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_balken_s))
-            p.drawString(14.4 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_barren_s))
-            p.drawString(16.0 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_boden_s))
-            p.drawString(17.6 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+            p.drawRightString(5.5 * cm, hoehe - (h * cm), str(jahr))
 
+            p.drawRightString(8.1 * cm, hoehe - (h * cm), "(" + str(ergebnis.ergebnis_sprung_a) + "/" + str(ergebnis.ergebnis_sprung_b) +")")
+            p.drawRightString(9 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_sprung_s))
+
+            p.drawRightString(11.1 * cm, hoehe - (h * cm), "(" + str(ergebnis.ergebnis_mini_a) + "/" + str(ergebnis.ergebnis_mini_b) +")")
+            p.drawRightString(12 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_mini_s))
+
+            p.drawRightString(14.1 * cm, hoehe - (h * cm), "(" + str(ergebnis.ergebnis_reck_a) + "/" + str(ergebnis.ergebnis_reck_b) +")")
+            p.drawRightString(15 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_reck_s))
+
+            p.drawRightString(17.1 * cm, hoehe - (h * cm), "(" + str(ergebnis.ergebnis_balken_a) + "/" + str(ergebnis.ergebnis_balken_b) +")")
+            p.drawRightString(18 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_balken_s))
+
+            p.drawRightString(20.1 * cm, hoehe - (h * cm), "(" + str(ergebnis.ergebnis_barren_a) + "/" + str(ergebnis.ergebnis_barren_b) +")")
+            p.drawRightString(21 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_barren_s))
+
+            p.drawRightString(23.1 * cm, hoehe - (h * cm), "(" + str(ergebnis.ergebnis_boden_a) + "/" + str(ergebnis.ergebnis_boden_b) +")")
+            p.drawRightString(24 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_boden_s))
+
+            summe_a = (ergebnis.ergebnis_sprung_a +
+                       ergebnis.ergebnis_mini_a +
+                       ergebnis.ergebnis_reck_a +
+                       ergebnis.ergebnis_balken_a +
+                       ergebnis.ergebnis_barren_a +
+                       ergebnis.ergebnis_boden_a)
+
+            summe_b = (ergebnis.ergebnis_sprung_b +
+                       ergebnis.ergebnis_mini_b +
+                       ergebnis.ergebnis_reck_b +
+                       ergebnis.ergebnis_balken_b +
+                       ergebnis.ergebnis_barren_b +
+                       ergebnis.ergebnis_boden_b)
+
+            p.drawRightString(26.1 * cm, hoehe - (h * cm), "(" + str(summe_a) + "/" + str(summe_b) +")")
+            p.drawRightString(27 * cm, hoehe - (h * cm), str(ergebnis.ergebnis_summe))
+
+            if 16 <= ergebnis.ergebnis_summe < 48:
+                medaille = 'Bronze'
+            elif 48 <= ergebnis.ergebnis_summe < 64:
+                medaille = 'Silber'
+            elif ergebnis.ergebnis_summe >= 64:
+                medaille = 'Gold'
+            else:
+                medaille = "-"
+            p.drawRightString(28.5 * cm, hoehe - (h * cm), str(medaille))
+            if h > 24:
+                p.showPage()
+                h = 1
         p.showPage()  # Erzwingt eine neue Seite
 
     # Close the PDF object cleanly, and we're done.
