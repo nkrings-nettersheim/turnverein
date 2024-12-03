@@ -13,7 +13,8 @@ class ErgebnisTeilnehmerSuchen(forms.Form):
     startnummer = forms.CharField(widget=forms.TextInput(
         attrs={
             'class': 'form-control',
-            'autofocus': 'autofocus'
+            'autofocus': 'autofocus',
+            'autocomplete': 'off'
         }
     ),
         required=True
@@ -149,6 +150,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         widget=forms.NumberInput(
             attrs={
                 'class': 'form-control',
+                'autofocus': 'autofocus'
             }
         ))
 
@@ -159,8 +161,7 @@ class ErgebnisTeilnehmererfassenForm(forms.ModelForm):
         min_value=0,
         widget=forms.NumberInput(
             attrs={
-                'class': 'form-control',
-                'autofocus': 'autofocus',
+                'class': 'form-control'
             }
         ))
 

@@ -86,44 +86,75 @@
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Sprung:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_sprung_s }}</div>
+        {% if form.geraet_option == "1" %}
+            <div class="col-4 text-info text-end">Sprung:</div>
+            <div class="col-4 text-info">{{ ergebnis.ergebnis_sprung_s }}</div>
+        {% else %}
+            <div class="col-4 text-end">Sprung:</div>
+            <div class="col-4">{{ ergebnis.ergebnis_sprung_s }}</div>
+        {% endif%}
         <div class="col"></div>
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Reck/Stufenb.:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_reck_s }}</div>
+        {% if form.geraet_option == "3" %}
+            <div class="col-4 text-info text-end">Reck/Stufenb.:</div>
+            <div class="col-4 text-info">{{ ergebnis.ergebnis_reck_s }}</div>
+        {% else %}
+            <div class="col-4 text-end">Reck/Stufenb.:</div>
+            <div class="col-4">{{ ergebnis.ergebnis_reck_s }}</div>
+        {% endif%}
         <div class="col"></div>
     </div>
         <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Minitramp.:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_mini_s }}</div>
+        {% if form.geraet_option == "2" %}
+            <div class="col-4 text-info text-end">Minitramp.:</div>
+            <div class="col-4 text-info">{{ ergebnis.ergebnis_mini_s }}</div>
+        {% else %}
+            <div class="col-4 text-end">Minitramp.:</div>
+            <div class="col-4">{{ ergebnis.ergebnis_mini_s }}</div>
+        {% endif%}
+
         <div class="col"></div>
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Barren:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_barren_s }}</div>
+        {% if form.geraet_option == "5" %}
+            <div class="col-4 text-info text-end">Barren:</div>
+            <div class="col-4 text-info">{{ ergebnis.ergebnis_barren_s }}</div>
+        {% else %}
+            <div class="col-4 text-end">Barren:</div>
+            <div class="col-4">{{ ergebnis.ergebnis_barren_s }}</div>
+        {% endif%}
         <div class="col"></div>
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Balken:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_balken_s }}</div>
+        {% if form.geraet_option == "4" %}
+            <div class="col-4 text-info text-end">Balken:</div>
+            <div class="col-4 text-info">{{ ergebnis.ergebnis_balken_s }}</div>
+        {% else %}
+            <div class="col-4 text-end">Balken:</div>
+            <div class="col-4">{{ ergebnis.ergebnis_balken_s }}</div>
+        {% endif%}
         <div class="col"></div>
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Boden:</div>
-        <div class="col-4">{{ ergebnis.ergebnis_boden_s }}</div>
+        {% if form.geraet_option == "6" %}
+            <div class="col-4 text-info text-end">Boden:</div>
+            <div class="col-4 text-info">{{ergebnis.ergebnis_boden_s}}</div>
+        {% else %}
+            <div class="col-4 text-end">Boden:</div>
+            <div class="col-4">{{ergebnis.ergebnis_boden_s}}</div>
+        {% endif %}
         <div class="col"></div>
     </div>
     <div class="row">
         <div class="col"></div>
-        <div class="col-4 text-end">Gesamt:</div>
-        <div class="col-4 mark">{{ ergebnis.ergebnis_summe }}</div>
+        <div class="col-4 text-success text-end">Gesamt:</div>
+        <div class="col-4 text-success">{{ ergebnis.ergebnis_summe }}</div>
         <div class="col"></div>
     </div>
 
