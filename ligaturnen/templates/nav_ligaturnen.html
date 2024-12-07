@@ -37,10 +37,15 @@
       </li>
     {% endif %}
     {% if perms.ligaturnen.add_ligaturnenergebnisse %}
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'ligaturnen:ergebnisse_list'%}">Ergebnisse anzeigen</a>
+      <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Ergebnisse</a>
+          <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="{% url 'ligaturnen:ergebnisse_list'%}">Ergebnisse</a></li>
+              <li><a class="dropdown-item" href="{% url 'ligaturnen:ergebnisse_check'%}">Check Ergebnisse</a></li>
+          </ul>
       </li>
     {% endif %}
+
     {% if perms.ligaturnen.add_teilnehmer %}
       <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Wettkampfende</a>

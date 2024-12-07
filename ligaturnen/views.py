@@ -745,6 +745,13 @@ class ErgebnisseList(PermissionRequiredMixin, ListView):
                 'ergebnis_teilnehmer__teilnehmer_vorname']
 
 
+class ErgebnisseCheck(PermissionRequiredMixin, ListView):
+    permission_required = "ligaturnen.add_ligaturnenergebnisse"
+    model = LigaturnenErgebnisse
+    template_name = "ligaturnen/ergebnisse_check.html"
+    ordering = ['ergebnis_teilnehmer__id']
+
+
 ##########################################################################
 # Area Auswertung Ligaturnen Mannschaften
 ##########################################################################

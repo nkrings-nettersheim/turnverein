@@ -34,13 +34,13 @@ urlpatterns = [
     path('teilnehmer_delete/<int:pk>/', views.TeilnehmerDeleteView.as_view(), name='teilnehmer_delete'),
     path('teilnehmer_upload/', views.teilnehmer_upload, name='teilnehmer_upload'),
 
-
     #ergebnis erfassen Bereich
     path('ergebnis_erfassen_suche/', views.ergebnis_erfassen_suche, name='ergebnis_erfassen_suche'),
     path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
     path('update_or_create/ergebnis/', views.update_or_create_ergebnis, name='update_or_create_ergebnis'),
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
     path('ergebnisse_list/', views.ErgebnisseList.as_view(), name='ergebnisse_list'),
+    path('ergebnisse_check/', views.ErgebnisseCheck.as_view(), name='ergebnisse_check'),
 
     # Bereich Auswertungen
     path('auswertungeinzel/', views.report_auswertung_einzel, name='auswertungeinzel'),
