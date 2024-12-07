@@ -29,6 +29,7 @@ urlpatterns = [
     path('add/ergebnis/', views.add_ergebnis, name='add_ergebnis'),
     path('edit/ergebnis/<id>/', views.edit_ergebnis, name='edit_ergebnis'),
     path('ergebnisse_list/', views.ErgebnisseList.as_view(), name='ergebnisse_list'),
+    path('ergebnisse_check/', views.ErgebnisseCheck.as_view(), name='ergebnisse_check'),
 
     path('geraetelisten/', views.report_geraetelisten, name='geraetelisten'),
     path('meldungen/', views.report_meldungen_vereine, name='meldungen'),
