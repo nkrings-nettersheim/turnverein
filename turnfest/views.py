@@ -719,6 +719,12 @@ class ErgebnisseList(PermissionRequiredMixin, ListView):
                 'ergebnis_teilnehmer__teilnehmer_name',
                 'ergebnis_teilnehmer__teilnehmer_vorname']
 
+class ErgebnisseCheck(PermissionRequiredMixin, ListView):
+    permission_required = "turnfest.add_bezirksturnfestergebnisse"
+    model = BezirksturnfestErgebnisse
+    template_name = "turnfest/ergebnisse_check.html"
+    ordering = ['ergebnis_teilnehmer__id']
+
 
 ##########################################################################
 # Area Auswertung Bezirksturnfest erfassen

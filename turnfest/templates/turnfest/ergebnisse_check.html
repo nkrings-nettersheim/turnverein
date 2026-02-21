@@ -1,0 +1,53 @@
+{% extends "base_bezirksturnfest.html" %}
+
+{% load static %}
+
+{% block title %}
+    Turnverein - Ergebnisse Check
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <p></p>
+    <div class="row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-4"><h3 class="text-center">Check Ergebnisse</h3></div>
+            <div class="col-sm-2"></div>
+            <div class="col-sm-2"></div>
+    </div>
+    <p></p>
+
+    <table class="table table-hover">
+    <thead>
+      <tr>
+          <th class="col-sm-1 text-center">Start Nr.</th>
+          <th class="col-sm-1 text-center">Sprung</th>
+          <th class="col-sm-1 text-center">Minitr.</th>
+          <th class="col-sm-1 text-center">Reck/Stuf.</th>
+          <th class="col-sm-1 text-center">Balken</th>
+          <th class="col-sm-1 text-center">Barren</th>
+          <th class="col-sm-1 text-center">Boden</th>
+      </tr>
+    </thead>
+          <tbody>
+        {% for ergebnis in object_list %}
+        <tr>
+            <td class="text-center">{{ ergebnis.ergebnis_teilnehmer.id }}</td>
+            <td class="text-center">({{ ergebnis.ergebnis_sprung_a }}/{{ ergebnis.ergebnis_sprung_b }}) {{ ergebnis.ergebnis_sprung_s }}</td>
+            <td class="text-center">({{ ergebnis.ergebnis_mini_a }}/{{ ergebnis.ergebnis_mini_b }}) {{ ergebnis.ergebnis_mini_s }}</td>
+            <td class="text-center">({{ ergebnis.ergebnis_reck_a }}/{{ ergebnis.ergebnis_reck_b }}) {{ ergebnis.ergebnis_reck_s }}</td>
+            <td class="text-center">({{ ergebnis.ergebnis_balken_a }}/{{ ergebnis.ergebnis_balken_b }}) {{ ergebnis.ergebnis_balken_s }}</td>
+            <td class="text-center">({{ ergebnis.ergebnis_barren_a }}/{{ ergebnis.ergebnis_barren_b }}) {{ ergebnis.ergebnis_barren_s }}</td>
+            <td class="text-center">({{ ergebnis.ergebnis_boden_a }}/{{ ergebnis.ergebnis_boden_b }}) {{ ergebnis.ergebnis_boden_s }}</td>
+        </tr>
+
+        {% empty %}
+        <li>Noch keine vorhanden</li>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>
+
+{% endblock %}
